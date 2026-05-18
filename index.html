@@ -812,12 +812,12 @@ padding:13px 0;
 font-size:11px;
 letter-spacing:1.8px;
 opacity:.74;
-animation:promoRun 24s linear infinite;
+animation:promoRun 25s linear infinite;
 }
 
 @keyframes promoRun{
-from{transform:translateX(100%);}
-to{transform:translateX(-100%);}
+0%{transform:translateX(100%);}
+100%{transform:translateX(-100%);}
 }
 
 .filter-shell{
@@ -980,6 +980,36 @@ font-size:12px;
 
 .live-item:last-child{
 border-bottom:none;
+}
+
+.operational-status{
+display:inline-flex;
+align-items:center;
+padding:4px 10px;
+border-radius:999px;
+font-size:11px;
+font-weight:700;
+letter-spacing:.6px;
+text-transform:uppercase;
+border:1px solid rgba(255,255,255,.2);
+}
+
+.operational-status[data-status="OPEN"]{
+background:rgba(26,166,102,.2);
+border-color:rgba(26,166,102,.55);
+color:#73f0b1;
+}
+
+.operational-status[data-status="CLOSED"]{
+background:rgba(214,61,61,.18);
+border-color:rgba(214,61,61,.55);
+color:#ff8f8f;
+}
+
+.operational-status[data-status="BOOKING ONLY"]{
+background:rgba(214,171,61,.2);
+border-color:rgba(214,171,61,.55);
+color:#ffd777;
 }
 
 .live-dot{
@@ -2015,7 +2045,7 @@ data-src=""></video>
 <div class="hero-promo-main"><img id="heroPromoImg" alt="Promo Banner"></div>
 <div class="hero-promo-brand">SYNCMOTORS</div>
 <div class="hero-promo-sub">Premium Motorcycle Marketplace</div>
-<div class="hero-promo-text" id="heroPromoText">RESA FARA DITA GA JELAS - RESA FARA DITA GA JELAS - RESA FARA DITA GA JELAS</div>
+<div class="hero-promo-text" id="heroPromoText">PROMO BESAR BESARAM - PROMO BESAR BESARAM - PROMO BESAR BESARAM</div>
 </div>
 
 <div class="title">
@@ -2398,7 +2428,8 @@ AVAILABLE MOTOR STOCK
 <div class="showcase-title">SHOWROOM LOCATION</div>
 <h3>SYNCMOTORS Premium Showroom</h3>
 <p style="opacity:.64;line-height:1.8;margin:12px 0;">Jakarta, Indonesia - appointment dan walk-in tersedia.</p>
-<div class="live-item"><span>Jam Operasional</span><strong>09.00 - 20.00</strong></div>
+<div class="live-item"><span>Jam Operasional</span><strong id="showroomOperationalHours">09:00 - 20:00</strong></div>
+<div class="live-item"><span>Status</span><strong id="showroomOperationalStatus" class="operational-status" data-status="OPEN">OPEN</strong></div>
 <div class="live-item"><span>Contact</span><strong id="showroomContact">Realtime WhatsApp</strong></div>
 <div class="showroom-photos">
 <div class="showroom-photo"></div>
@@ -2656,6 +2687,7 @@ console.log('Firebase initialized',Boolean(app),Boolean(auth),Boolean(db));
 const MOTOR_COLLECTION = "motors";
 const SETTINGS_COLLECTION = "settings";
 const CONTACT_DOC = "contact";
+const PROMO_TEXT_DOC = "promo";
 const PROMO_COLLECTION = "promoBanners";
 const LEADS_COLLECTION = "leads";
 const ANALYTICS_COLLECTION = "analytics";
@@ -2687,6 +2719,8 @@ let maintenanceMode = false;
 let adminLoginEventsReady = false;
 let unsubscribeLeads = null;
 let unsubscribePromo = null;
+let unsubscribePromoText = null;
+let unsubscribePromoContact = null;
 let v2InventorySelection = new Set();
 let v2InventoryPage = 1;
 let v2InventoryPerPage = 10;
@@ -2695,9 +2729,13 @@ let v2LeadsState = [];
 let v2PromoState = [];
 let v2SettingsState = {};
 const DEFAULT_MAP_EMBED_URL = 'https://www.google.com/maps?q=Jakarta%20Indonesia&output=embed';
+const DEFAULT_PROMO_TEXT = 'SYNCMOTORS PREMIUM SHOWROOM - UNIT READY UPDATE REALTIME - CHAT ADMIN VIA WHATSAPP';
+const DEFAULT_OPEN_HOUR = '09:00';
+const DEFAULT_CLOSE_HOUR = '20:00';
+const DEFAULT_SHOWROOM_STATUS = 'OPEN';
 const localPromoKey = 'syncmotors_local_promo_v1';
-const localPromoRunnerKey = 'syncmotors_promo_runner_text_v1';
 const localShowroomMapKey = 'syncmotors_showroom_map_embed_v1';
+const localOperationalHoursKey = 'syncmotors_operational_hours_v1';
 const wishlistKey = 'syncmotors_wishlist_v1';
 const sessionViewerKey = 'syncmotors_session_viewer';
 const adminSessionKey = 'syncmotors_admin_session_v1';
@@ -3198,6 +3236,64 @@ status.innerText = src === DEFAULT_MAP_EMBED_URL
 
 }
 
+function isValidTimeFormat(value){
+return /^([01]\d|2[0-3]):([0-5]\d)$/.test(safeValue(value).trim());
+}
+
+function normalizeShowroomStatus(value){
+const normalized = safeValue(value).trim().toUpperCase();
+return ['OPEN','CLOSED','BOOKING ONLY'].includes(normalized)
+? normalized
+: DEFAULT_SHOWROOM_STATUS;
+}
+
+function applyOperationalHours(openHour,closeHour,status){
+const open = isValidTimeFormat(openHour) ? openHour : DEFAULT_OPEN_HOUR;
+const close = isValidTimeFormat(closeHour) ? closeHour : DEFAULT_CLOSE_HOUR;
+const normalizedStatus = normalizeShowroomStatus(status);
+setText('showroomOperationalHours',`${open} - ${close}`);
+const statusEl = document.getElementById('showroomOperationalStatus');
+if(statusEl){
+statusEl.innerText = normalizedStatus;
+statusEl.setAttribute('data-status',normalizedStatus);
+}
+const openInput = document.getElementById('operationalOpenTime');
+const closeInput = document.getElementById('operationalCloseTime');
+const statusInput = document.getElementById('operationalStatus');
+if(openInput && document.activeElement !== openInput) openInput.value = open;
+if(closeInput && document.activeElement !== closeInput) closeInput.value = close;
+if(statusInput && document.activeElement !== statusInput) statusInput.value = normalizedStatus;
+const summary = document.getElementById('operationalStatusSummary');
+if(summary){
+summary.innerText = `Aktif: ${open} - ${close} (${normalizedStatus})`;
+}
+}
+
+function normalizePromoText(value){
+const raw = safeValue(value,DEFAULT_PROMO_TEXT).replace(/\s+/g,' ').trim();
+return raw || DEFAULT_PROMO_TEXT;
+}
+
+function applyPromoText(value){
+const promoText = normalizePromoText(value);
+const promoRunner = document.getElementById('promoRunner');
+if(promoRunner){
+promoRunner.textContent = promoText;
+}
+const promoInput = document.getElementById('promoInput');
+if(promoInput && document.activeElement !== promoInput){
+promoInput.value = promoText;
+}
+const legacyInput = document.getElementById('promoLandingText');
+if(legacyInput && document.activeElement !== legacyInput){
+legacyInput.value = promoText;
+}
+const promoStatus = document.getElementById('promoSyncStatus');
+if(promoStatus){
+promoStatus.innerText = 'Realtime aktif';
+}
+}
+
 function syncWhatsAppAdminUi(){
 
 const input =
@@ -3604,17 +3700,6 @@ console.log('Firestore WhatsApp contact data',whatsappState);
 
 syncWhatsAppAdminUi();
 
-const promoText =
-safeValue(pickValue(data.promoText,data.promoBanner,data.runningText),'');
-
-if(promoText){
-
-setText('promoRunner',`${promoText} - ${promoText} - ${promoText}`);
-const promoInput = document.getElementById('promoLandingText');
-if(promoInput) promoInput.value = promoText;
-
-}
-
 const heroVideoUrl =
 safeValue(pickValue(data.heroVideoUrl,data.videoHero,data.showroomVideo),'');
 
@@ -3647,6 +3732,23 @@ console.error('local map save error',error);
 }
 }
 
+const operationalOpen =
+safeValue(pickValue(data.operationalOpen,data.openHour,data.openTime),DEFAULT_OPEN_HOUR).trim();
+const operationalClose =
+safeValue(pickValue(data.operationalClose,data.closeHour,data.closeTime),DEFAULT_CLOSE_HOUR).trim();
+const operationalStatus =
+safeValue(pickValue(data.operationalStatus,data.showroomStatus),DEFAULT_SHOWROOM_STATUS).trim();
+applyOperationalHours(operationalOpen,operationalClose,operationalStatus);
+try{
+localStorage.setItem(localOperationalHoursKey,JSON.stringify({
+open:operationalOpen,
+close:operationalClose,
+status:normalizeShowroomStatus(operationalStatus)
+}));
+}catch(error){
+console.error('local operational hours save error',error);
+}
+
 renderMotors(motorsState);
 
 }
@@ -3671,33 +3773,6 @@ normalizedNumber.length > 15
 alert('Nomor WhatsApp belum valid');
 return;
 
-}
-
-window.savePromoRunnerText = async function(){
-const input = document.getElementById('promoLandingText');
-const text = safeValue(input?.value).trim();
-if(!text){
-alert('Text promo wajib diisi');
-return;
-}
-setText('promoRunner',`${text} - ${text} - ${text}`);
-try{
-localStorage.setItem(localPromoRunnerKey,text);
-}catch(error){
-console.error('local promo runner save error',error);
-}
-try{
-await setDoc(
-doc(db,SETTINGS_COLLECTION,CONTACT_DOC),
-{
-promoText:text,
-updatedAt:new Date().toISOString()
-},
-{merge:true}
-);
-}catch(error){
-console.error('savePromoRunnerText firestore error',error);
-}
 }
 
 try{
@@ -5056,6 +5131,76 @@ contactFallbackTimer = null;
 
 }
 
+function cleanupPromoTextListener(){
+if(unsubscribePromoText){
+unsubscribePromoText();
+unsubscribePromoText = null;
+}
+if(unsubscribePromoContact){
+unsubscribePromoContact();
+unsubscribePromoContact = null;
+}
+}
+
+async function loadPromoTextFallback(){
+try{
+const snapshot = await getDoc(doc(db,SETTINGS_COLLECTION,CONTACT_DOC));
+const promo = snapshot.exists()
+? normalizePromoText(snapshot.data()?.promoText || snapshot.data()?.promo || snapshot.data()?.runningText)
+: DEFAULT_PROMO_TEXT;
+const promoRunner = document.getElementById('promoRunner');
+if(!promoRunner) return;
+promoRunner.textContent = promo || DEFAULT_PROMO_TEXT;
+const promoInput = document.getElementById('promoInput');
+if(promoInput && document.activeElement !== promoInput){
+promoInput.value = promo || DEFAULT_PROMO_TEXT;
+}
+const legacyInput = document.getElementById('promoLandingText');
+if(legacyInput && document.activeElement !== legacyInput){
+legacyInput.value = promo || DEFAULT_PROMO_TEXT;
+}
+}catch(error){
+console.error('Firestore promo fallback gagal',error);
+applyPromoText(DEFAULT_PROMO_TEXT);
+}
+}
+
+function startPromoTextRealtime(){
+cleanupPromoTextListener();
+unsubscribePromoText = onSnapshot(
+doc(db,SETTINGS_COLLECTION,CONTACT_DOC),
+(snapshot)=>{
+const promoRunner = document.getElementById('promoRunner');
+if(!promoRunner) return;
+const data = snapshot.data();
+const promo = data && (data.promoText || data.promo || data.runningText)
+? normalizePromoText(data.promoText || data.promo || data.runningText)
+: DEFAULT_PROMO_TEXT;
+promoRunner.textContent = promo;
+const promoInput = document.getElementById('promoInput');
+if(promoInput && document.activeElement !== promoInput){
+promoInput.value = promo;
+}
+const legacyInput = document.getElementById('promoLandingText');
+if(legacyInput && document.activeElement !== legacyInput){
+legacyInput.value = promo;
+}
+const promoStatus = document.getElementById('promoSyncStatus');
+if(promoStatus){
+promoStatus.innerText = 'Realtime aktif';
+}
+},
+(error)=>{
+console.error('Firestore promo realtime gagal',error);
+const promoStatus = document.getElementById('promoSyncStatus');
+if(promoStatus){
+promoStatus.innerText = `Realtime error: ${safeValue(error?.code || error?.message,'unknown_error')}`;
+}
+cleanupPromoTextListener();
+loadPromoTextFallback();
+});
+}
+
 function startContactRealtime(){
 
 cleanupContactListener();
@@ -5091,6 +5236,7 @@ function cleanupRealtimeListeners(){
 
 cleanupMotorsListener();
 cleanupContactListener();
+cleanupPromoTextListener();
 
 }
 
@@ -5150,6 +5296,8 @@ wrapper.innerHTML=`
 <div id="settingsCenterPanel" class="settings-panel" style="margin-top:14px;"></div>
 <div id="promoBannerPanel" class="settings-panel" style="margin-top:14px;"></div>
 <div id="showroomLocationPanel" class="settings-panel" style="margin-top:14px;"></div>
+<div id="operationalHoursPanel" class="settings-panel" style="margin-top:14px;"></div>
+<div id="promoRunningTextPanel" class="settings-panel" style="margin-top:14px;"></div>
 `;
 adminShell.parentElement?.appendChild(wrapper);
 }
@@ -5167,6 +5315,8 @@ menu.insertAdjacentHTML('beforeend',`
 <button type="button" onclick="scrollToAdminSection('settingsCenterPanel')">Settings Center</button>
 <button type="button" onclick="scrollToAdminSection('promoBannerPanel')">Promo Banner</button>
 <button type="button" onclick="scrollToAdminSection('showroomLocationPanel')">Showroom Location</button>
+<button type="button" onclick="scrollToAdminSection('operationalHoursPanel')">Jam Operasional</button>
+<button type="button" onclick="scrollToAdminSection('promoRunningTextPanel')">Promo Running Text</button>
 `);
 }
 }catch(error){
@@ -5382,7 +5532,7 @@ reader.onload = ()=>resolve(reader.result);
 reader.onerror = reject;
 reader.readAsDataURL(file);
 });
-const title = 'RESA FARA DITA GA JELAS - RESA FARA DITA GA JELAS - RESA FARA DITA GA JELAS';
+const title = 'PROMO BESAR BESARAM - PROMO BESAR BESARAM - PROMO BESAR BESARAM';
 const promoPayload = {
 title,
 subtitle:'',
@@ -5465,6 +5615,103 @@ alert('Lokasi disimpan lokal, namun sinkron Firestore gagal');
 }
 };
 
+function initOperationalHoursPanel(){
+const panel = document.getElementById('operationalHoursPanel');
+if(!panel || panel.dataset.ready) return;
+panel.dataset.ready='1';
+panel.innerHTML = `<div class="settings-header"><div><div class="settings-title">JAM OPERASIONAL</div><div class="settings-note">Atur jadwal showroom realtime</div></div><button class="quick-action" type="button" onclick="saveOperationalHours()">SIMPAN JAM OPERASIONAL</button></div><div class="admin-grid"><input id="operationalOpenTime" type="time" value="${DEFAULT_OPEN_HOUR}" placeholder="Jam buka"><input id="operationalCloseTime" type="time" value="${DEFAULT_CLOSE_HOUR}" placeholder="Jam tutup"><select id="operationalStatus"><option value="OPEN">OPEN</option><option value="CLOSED">CLOSED</option><option value="BOOKING ONLY">BOOKING ONLY</option></select></div><div class="settings-note" id="operationalStatusSummary">Aktif: ${DEFAULT_OPEN_HOUR} - ${DEFAULT_CLOSE_HOUR} (${DEFAULT_SHOWROOM_STATUS})</div>`;
+applyOperationalHours(
+document.getElementById('operationalOpenTime')?.value || DEFAULT_OPEN_HOUR,
+document.getElementById('operationalCloseTime')?.value || DEFAULT_CLOSE_HOUR,
+document.getElementById('operationalStatus')?.value || DEFAULT_SHOWROOM_STATUS
+);
+}
+
+window.saveOperationalHours = async function(){
+const openInput = document.getElementById('operationalOpenTime');
+const closeInput = document.getElementById('operationalCloseTime');
+const statusInput = document.getElementById('operationalStatus');
+const open = safeValue(openInput?.value).trim();
+const close = safeValue(closeInput?.value).trim();
+const status = normalizeShowroomStatus(statusInput?.value);
+if(!open || !close){
+alert('Jam operasional wajib diisi');
+return;
+}
+if(!isValidTimeFormat(open) || !isValidTimeFormat(close)){
+alert('Format jam tidak valid');
+return;
+}
+applyOperationalHours(open,close,status);
+try{
+localStorage.setItem(localOperationalHoursKey,JSON.stringify({open,close,status}));
+}catch(error){
+console.error('local operational hours save error',error);
+}
+try{
+await safeFirestore(()=>setDoc(
+doc(db,SETTINGS_COLLECTION,CONTACT_DOC),
+{
+operationalOpen:open,
+operationalClose:close,
+operationalStatus:status,
+updatedAt:new Date().toISOString()
+},
+{merge:true}
+));
+alert('Jam operasional berhasil disimpan');
+}catch(error){
+console.error('save operational hours firestore error',error);
+alert('Jam operasional disimpan lokal, namun sinkron Firestore gagal');
+}
+};
+
+function initPromoRunningTextPanel(){
+const panel = document.getElementById('promoRunningTextPanel');
+if(!panel || panel.dataset.ready) return;
+panel.dataset.ready='1';
+panel.innerHTML = `<div class="settings-header"><div><div class="settings-title">PROMO RUNNING TEXT</div><div class="settings-note">Update promo realtime tanpa reload</div></div><button id="savePromoBtn" class="quick-action" type="button" onclick="savePromoRunnerText()">SIMPAN PROMO</button></div><div class="admin-grid"><textarea id="promoInput" placeholder="Tulis text promo showroom..." style="min-height:110px;resize:vertical;"></textarea></div><div class="settings-note" id="promoSyncStatus">Menunggu sinkron realtime...</div>`;
+applyPromoText(document.getElementById('promoRunner')?.textContent || DEFAULT_PROMO_TEXT);
+}
+
+window.savePromoRunnerText = async function(){
+const input = document.getElementById('promoInput') || document.getElementById('promoLandingText');
+const saveBtn = document.getElementById('savePromoBtn');
+const raw = safeValue(input?.value).trim();
+if(!raw){
+alert('Promo tidak boleh kosong');
+return;
+}
+if(!hasFirestore()){
+alert('Firestore belum siap. Coba ulang beberapa detik lagi.');
+return;
+}
+const promo = normalizePromoText(raw);
+applyPromoText(promo);
+try{
+if(saveBtn) saveBtn.disabled = true;
+await setDoc(
+doc(db,SETTINGS_COLLECTION,CONTACT_DOC),
+{
+promoText:promo,
+updatedAt:new Date().toISOString()
+},
+{merge:true}
+);
+alert('Promo berhasil disimpan');
+}catch(error){
+console.error('save promo text firestore error',error);
+const reason = safeValue(error?.code || error?.message,'unknown_error');
+const promoStatus = document.getElementById('promoSyncStatus');
+if(promoStatus){
+promoStatus.innerText = `Gagal simpan: ${reason}`;
+}
+alert(`Gagal menyimpan promo ke Firestore (${reason})`);
+}finally{
+if(saveBtn) saveBtn.disabled = false;
+}
+};
+
 function forceSimplePromoPanel(){
 const panel = document.getElementById('promoBannerPanel');
 if(!panel) return;
@@ -5542,7 +5789,7 @@ img.loading = 'lazy';
 bg.loading = 'lazy';
 img.onerror = ()=>{ box.style.display='none'; };
 bg.onerror = ()=>{ box.style.display='none'; };
-text.innerText = safeValue(item.title || 'RESA FARA DITA GA JELAS - RESA FARA DITA GA JELAS - RESA FARA DITA GA JELAS');
+text.innerText = safeValue(item.title || 'PROMO BESAR BESARAM - PROMO BESAR BESARAM - PROMO BESAR BESARAM');
 box.style.display='none';
 hero.style.backgroundImage = `linear-gradient(180deg,rgba(0,0,0,.45),rgba(0,0,0,.65)), url('${src}')`;
 hero.classList.add('banner-active');
@@ -5559,6 +5806,8 @@ safeStartup('init settings',initSettings);
 safeStartup('init leads',initLeads);
 safeStartup('init media manager',initMediaManager);
 safeStartup('init showroom location',initShowroomLocationPanel);
+safeStartup('init operational hours',initOperationalHoursPanel);
+safeStartup('init promo running text',initPromoRunningTextPanel);
 safeStartup('render admin table v2',renderAdminTableV2);
 }
 
@@ -5722,15 +5971,17 @@ safeStartup('admin hidden trigger',setupHiddenAdminTrigger);
 function bootSyncMotors(){
 
 bootAdminLoginSystem();
+applyPromoText(DEFAULT_PROMO_TEXT);
 try{
-const localPromoText = localStorage.getItem(localPromoRunnerKey);
-if(localPromoText){
-setText('promoRunner',`${localPromoText} - ${localPromoText} - ${localPromoText}`);
-const promoInput = document.getElementById('promoLandingText');
-if(promoInput) promoInput.value = localPromoText;
+const localOperational = JSON.parse(localStorage.getItem(localOperationalHoursKey) || 'null');
+if(localOperational){
+applyOperationalHours(localOperational.open,localOperational.close,localOperational.status);
+}else{
+applyOperationalHours(DEFAULT_OPEN_HOUR,DEFAULT_CLOSE_HOUR,DEFAULT_SHOWROOM_STATUS);
 }
 }catch(error){
-console.error('load local promo runner error',error);
+console.error('load local operational hours error',error);
+applyOperationalHours(DEFAULT_OPEN_HOUR,DEFAULT_CLOSE_HOUR,DEFAULT_SHOWROOM_STATUS);
 }
 try{
 const localMapUrl = safeValue(localStorage.getItem(localShowroomMapKey)).trim();
@@ -5751,6 +6002,7 @@ safeStartup('seo',()=>updateSeoForMotor(null));
 safeStartup('admin clock',startAdminClock);
 safeStartup('motors realtime',startMotorsRealtime);
 safeStartup('contact realtime',startContactRealtime);
+safeStartup('promo text realtime',startPromoTextRealtime);
 safeStartup('admin suite v2',bootAdmin);
 
 }
