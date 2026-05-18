@@ -87,6 +87,22 @@ padding:20px;
 position:relative;
 z-index:2;
 overflow:hidden;
+background-size:cover;
+background-position:center;
+transition:background-image .45s ease, filter .45s ease;
+}
+
+.hero.banner-active::before{
+background:linear-gradient(
+180deg,
+rgba(0,0,0,.45),
+rgba(0,0,0,.65)
+)!important;
+opacity:1;
+}
+
+.hero.banner-active .hero-video{
+opacity:.08;
 }
 
 .hero-video{
@@ -236,6 +252,93 @@ letter-spacing:.3px;
 font-size:10px;
 opacity:.65;
 letter-spacing:1px;
+}
+
+.hero-promo-banner{
+position:relative;
+z-index:2;
+width:min(980px,94vw);
+margin:0 auto 14px;
+border-radius:16px;
+overflow:hidden;
+border:1px solid rgba(255,255,255,.22);
+background:rgba(255,255,255,.05);
+display:none;
+aspect-ratio:16/9;
+box-shadow:0 30px 90px rgba(0,0,0,.45);
+}
+
+.hero-promo-bg{
+position:absolute;
+inset:0;
+width:100%;
+height:100%;
+object-fit:cover;
+filter:blur(16px) brightness(.5) saturate(1.1);
+transform:scale(1.1);
+}
+
+.hero-promo-overlay{
+position:absolute;
+inset:0;
+background:linear-gradient(180deg,rgba(0,0,0,.25),rgba(0,0,0,.72));
+}
+
+.hero-promo-main{
+position:absolute;
+inset:0;
+display:flex;
+align-items:center;
+justify-content:center;
+}
+
+.hero-promo-main img{
+width:min(72%,760px);
+height:72%;
+object-fit:cover;
+border-radius:14px;
+border:1px solid rgba(255,255,255,.24);
+box-shadow:0 28px 70px rgba(0,0,0,.58),0 0 40px rgba(255,255,255,.08);
+}
+
+.hero-promo-brand{
+position:absolute;
+left:18px;
+top:14px;
+font-size:clamp(20px,4vw,40px);
+font-weight:900;
+letter-spacing:2px;
+text-shadow:0 10px 28px rgba(0,0,0,.65);
+}
+
+.hero-promo-sub{
+position:absolute;
+left:20px;
+top:60px;
+font-size:11px;
+letter-spacing:2px;
+opacity:.86;
+text-transform:uppercase;
+}
+
+.hero-promo-text{
+position:absolute;
+left:0;
+right:0;
+bottom:0;
+padding:12px 14px;
+font-size:clamp(20px,4vw,34px);
+font-weight:900;
+letter-spacing:1.5px;
+background:linear-gradient(180deg,transparent,rgba(0,0,0,.85));
+text-transform:uppercase;
+text-shadow:0 8px 22px rgba(0,0,0,.6);
+}
+
+.hero-promo-banner img{
+width:100%;
+height:100%;
+display:block;
 }
 
 .metric-pill,
@@ -1906,6 +2009,15 @@ loop
 preload="none"
 data-src=""></video>
 
+<div class="hero-promo-banner" id="heroPromoBanner">
+<img id="heroPromoBg" class="hero-promo-bg" alt="Promo Banner Background">
+<div class="hero-promo-overlay"></div>
+<div class="hero-promo-main"><img id="heroPromoImg" alt="Promo Banner"></div>
+<div class="hero-promo-brand">SYNCMOTORS</div>
+<div class="hero-promo-sub">Premium Motorcycle Marketplace</div>
+<div class="hero-promo-text" id="heroPromoText">PROMO BESAR BESARAM - PROMO BESAR BESARAM - PROMO BESAR BESARAM</div>
+</div>
+
 <div class="title">
 SYNCMOTORS
 </div>
@@ -2074,6 +2186,11 @@ onclick="saveWhatsAppNumber()">
 SIMPAN WA
 </button>
 
+</div>
+
+<div class="wa-control" style="margin-top:10px;">
+<input id="promoLandingText" placeholder="Text Promo Landing Page">
+<button class="save-wa-btn" type="button" onclick="savePromoRunnerText()">SIMPAN PROMO</button>
 </div>
 
 </div>
@@ -2577,6 +2694,10 @@ let v2InventorySearchDebounced = null;
 let v2LeadsState = [];
 let v2PromoState = [];
 let v2SettingsState = {};
+const DEFAULT_MAP_EMBED_URL = 'https://www.google.com/maps?q=Jakarta%20Indonesia&output=embed';
+const localPromoKey = 'syncmotors_local_promo_v1';
+const localPromoRunnerKey = 'syncmotors_promo_runner_text_v1';
+const localShowroomMapKey = 'syncmotors_showroom_map_embed_v1';
 const wishlistKey = 'syncmotors_wishlist_v1';
 const sessionViewerKey = 'syncmotors_session_viewer';
 const adminSessionKey = 'syncmotors_admin_session_v1';
@@ -3036,6 +3157,47 @@ return whatsappState.normalizedNumber
 
 }
 
+function isGoogleMapsEmbedUrl(value){
+
+const raw = safeValue(value).trim();
+if(!raw) return false;
+
+try{
+const parsed = new URL(raw);
+const host = parsed.hostname.toLowerCase();
+const pathname = parsed.pathname.toLowerCase();
+const isGoogleMapsHost =
+host === 'google.com' ||
+host.endsWith('.google.com') ||
+host === 'maps.app.goo.gl' ||
+host.endsWith('.maps.app.goo.gl');
+if(!isGoogleMapsHost) return false;
+return parsed.searchParams.get('output') === 'embed' || pathname.includes('/maps/embed');
+}catch(error){
+return false;
+}
+
+}
+
+function applyShowroomMapUrl(value){
+
+const src = safeValue(value).trim() || DEFAULT_MAP_EMBED_URL;
+document.querySelectorAll('iframe.map-frame').forEach((frame)=>{
+frame.src = src;
+});
+const input = document.getElementById('showroomMapUrlInput');
+if(input && document.activeElement !== input){
+input.value = src;
+}
+const status = document.getElementById('showroomMapUrlStatus');
+if(status){
+status.innerText = src === DEFAULT_MAP_EMBED_URL
+? 'Lokasi default: Jakarta, Indonesia'
+: 'Lokasi showroom aktif dan tersimpan';
+}
+
+}
+
 function syncWhatsAppAdminUi(){
 
 const input =
@@ -3448,6 +3610,8 @@ safeValue(pickValue(data.promoText,data.promoBanner,data.runningText),'');
 if(promoText){
 
 setText('promoRunner',`${promoText} - ${promoText} - ${promoText}`);
+const promoInput = document.getElementById('promoLandingText');
+if(promoInput) promoInput.value = promoText;
 
 }
 
@@ -3467,6 +3631,20 @@ setupHeroVideo();
 
 }
 
+}
+
+const mapEmbedUrl = safeValue(
+pickValue(data.mapEmbedUrl,data.showroomMapUrl,data.mapUrl),
+''
+).trim();
+
+if(mapEmbedUrl){
+applyShowroomMapUrl(mapEmbedUrl);
+try{
+localStorage.setItem(localShowroomMapKey,mapEmbedUrl);
+}catch(error){
+console.error('local map save error',error);
+}
 }
 
 renderMotors(motorsState);
@@ -3493,6 +3671,33 @@ normalizedNumber.length > 15
 alert('Nomor WhatsApp belum valid');
 return;
 
+}
+
+window.savePromoRunnerText = async function(){
+const input = document.getElementById('promoLandingText');
+const text = safeValue(input?.value).trim();
+if(!text){
+alert('Text promo wajib diisi');
+return;
+}
+setText('promoRunner',`${text} - ${text} - ${text}`);
+try{
+localStorage.setItem(localPromoRunnerKey,text);
+}catch(error){
+console.error('local promo runner save error',error);
+}
+try{
+await setDoc(
+doc(db,SETTINGS_COLLECTION,CONTACT_DOC),
+{
+promoText:text,
+updatedAt:new Date().toISOString()
+},
+{merge:true}
+);
+}catch(error){
+console.error('savePromoRunnerText firestore error',error);
+}
 }
 
 try{
@@ -4944,6 +5149,7 @@ wrapper.innerHTML=`
 <div id="mediaManagerPanel" class="settings-panel" style="margin-top:14px;"></div>
 <div id="settingsCenterPanel" class="settings-panel" style="margin-top:14px;"></div>
 <div id="promoBannerPanel" class="settings-panel" style="margin-top:14px;"></div>
+<div id="showroomLocationPanel" class="settings-panel" style="margin-top:14px;"></div>
 `;
 adminShell.parentElement?.appendChild(wrapper);
 }
@@ -4960,6 +5166,7 @@ menu.insertAdjacentHTML('beforeend',`
 <button type="button" onclick="scrollToAdminSection('mediaManagerPanel')">Media Manager</button>
 <button type="button" onclick="scrollToAdminSection('settingsCenterPanel')">Settings Center</button>
 <button type="button" onclick="scrollToAdminSection('promoBannerPanel')">Promo Banner</button>
+<button type="button" onclick="scrollToAdminSection('showroomLocationPanel')">Showroom Location</button>
 `);
 }
 }catch(error){
@@ -5153,7 +5360,59 @@ function initPromoBanner(){
 const panel = document.getElementById('promoBannerPanel');
 if(!panel || panel.dataset.ready) return;
 panel.dataset.ready='1';
-panel.innerHTML = `<div class="settings-header"><div><div class="settings-title">Promo Banner Manager</div><div class="settings-note">Create, edit, delete, enable/disable, reorder banner promo.</div></div><button class="quick-action" type="button" onclick="openPromoModal()">Tambah Banner</button></div><div id="promoRows"></div>`;
+panel.innerHTML = `<div class="settings-header"><div><div class="settings-title">Upload Banner Landing</div><div class="settings-note">Klik upload, pilih foto, banner langsung tampil di hero.</div></div><button class="quick-action" type="button" onclick="quickUploadPromoBanner()">Upload Banner</button></div><div id="promoRows"></div>`;
+try{
+const localPromo = JSON.parse(localStorage.getItem(localPromoKey) || 'null');
+if(localPromo){
+v2PromoState = [localPromo];
+renderPromoFrontend();
+}
+
+window.quickUploadPromoBanner = function(){
+const input = document.createElement('input');
+input.type = 'file';
+input.accept = 'image/*';
+input.onchange = async (event)=>{
+try{
+const file = event.target?.files?.[0];
+if(!file) return;
+const imageUrl = await new Promise((resolve,reject)=>{
+const reader = new FileReader();
+reader.onload = ()=>resolve(reader.result);
+reader.onerror = reject;
+reader.readAsDataURL(file);
+});
+const title = 'PROMO BESAR BESARAM - PROMO BESAR BESARAM - PROMO BESAR BESARAM';
+const promoPayload = {
+title,
+subtitle:'',
+description:'',
+buttonText:'',
+buttonUrl:'#',
+imageUrl,
+overlayColor:'rgba(0,0,0,.35)',
+startDate:new Date().toISOString().slice(0,10),
+endDate:'',
+priority:1,
+location:'Landing Page Hero',
+enabled:true,
+createdAt:new Date().toISOString(),
+updatedAt:new Date().toISOString()
+};
+localStorage.setItem(localPromoKey,JSON.stringify(promoPayload));
+v2PromoState = [promoPayload];
+renderPromoFrontend();
+await safeFirestore(()=>addDoc(collection(db,PROMO_COLLECTION),promoPayload),null);
+}catch(error){
+console.error('quickUploadPromoBanner error',error);
+}
+};
+input.click();
+};
+
+}catch(error){
+console.error('load local promo error',error);
+}
 safeFirestore(()=>onSnapshot(collection(db,PROMO_COLLECTION),(snap)=>{
 v2PromoState = snap.docs.map((d)=>({id:d.id,...d.data()})).sort((a,b)=>(a.priority || 0) - (b.priority || 0));
 const rows = document.getElementById('promoRows');
@@ -5162,6 +5421,67 @@ rows.innerHTML = v2PromoState.length ? v2PromoState.map((item)=>`<div class="liv
 }
 renderPromoFrontend();
 },(error)=>console.error('promo realtime error',error)));
+forceSimplePromoPanel();
+}
+
+function initShowroomLocationPanel(){
+const panel = document.getElementById('showroomLocationPanel');
+if(!panel || panel.dataset.ready) return;
+panel.dataset.ready='1';
+panel.innerHTML = `<div class="settings-header"><div><div class="settings-title">SHOWROOM LOCATION</div><div class="settings-note">Edit lokasi maps showroom realtime</div></div><button class="quick-action" type="button" onclick="saveShowroomMapLocation()">SIMPAN LOKASI</button></div><div class="admin-grid"><input id="showroomMapUrlInput" placeholder="https://www.google.com/maps?q=Jakarta%20Indonesia&output=embed"></div><div class="settings-note" id="showroomMapUrlStatus">Lokasi default: Jakarta, Indonesia</div>`;
+applyShowroomMapUrl(document.querySelector('iframe.map-frame')?.getAttribute('src') || DEFAULT_MAP_EMBED_URL);
+}
+
+window.saveShowroomMapLocation = async function(){
+const input = document.getElementById('showroomMapUrlInput');
+const mapEmbedUrl = safeValue(input?.value).trim();
+if(!mapEmbedUrl){
+alert('Link maps wajib diisi');
+return;
+}
+if(!isGoogleMapsEmbedUrl(mapEmbedUrl)){
+alert('Gunakan link Google Maps embed yang valid');
+return;
+}
+applyShowroomMapUrl(mapEmbedUrl);
+try{
+localStorage.setItem(localShowroomMapKey,mapEmbedUrl);
+}catch(error){
+console.error('local map save error',error);
+}
+try{
+await safeFirestore(()=>setDoc(
+doc(db,SETTINGS_COLLECTION,CONTACT_DOC),
+{
+mapEmbedUrl,
+updatedAt:new Date().toISOString()
+},
+{merge:true}
+));
+alert('Lokasi showroom berhasil disimpan');
+}catch(error){
+console.error('save showroom map firestore error',error);
+alert('Lokasi disimpan lokal, namun sinkron Firestore gagal');
+}
+};
+
+function forceSimplePromoPanel(){
+const panel = document.getElementById('promoBannerPanel');
+if(!panel) return;
+const headerTitle = panel.querySelector('.settings-title');
+const headerNote = panel.querySelector('.settings-note');
+const oldBtn = panel.querySelector('.quick-action');
+if(headerNote){
+headerNote.innerText = 'Upload foto banner langsung tampil di hero.';
+}
+if(oldBtn){
+oldBtn.setAttribute('onclick','quickUploadPromoBanner()');
+oldBtn.innerText = 'Upload Banner Cepat';
+}
+const existingInput = document.getElementById('quickPromoText');
+if(existingInput){
+existingInput.closest('.table-tools')?.remove();
+}
 }
 
 function renderPromoFrontend(){
@@ -5199,6 +5519,33 @@ const viewer = document.getElementById('viewerPromoInline');
 if(viewer){
 viewer.innerHTML = active[0] ? `${escapeHtml(active[0].title || '')} - ${escapeHtml(active[0].description || '')}` : '';
 }
+renderHeroPromoBanner(active[0] || null);
+}
+
+function renderHeroPromoBanner(item){
+const box = document.getElementById('heroPromoBanner');
+const img = document.getElementById('heroPromoImg');
+const bg = document.getElementById('heroPromoBg');
+const text = document.getElementById('heroPromoText');
+const hero = document.querySelector('.hero');
+if(!box || !img || !bg || !text) return;
+if(!item || !item.imageUrl || !hero){
+box.style.display='none';
+hero?.classList.remove('banner-active');
+hero?.style.removeProperty('background-image');
+return;
+}
+const src = safeValue(item.imageUrl);
+img.src = src;
+bg.src = src;
+img.loading = 'lazy';
+bg.loading = 'lazy';
+img.onerror = ()=>{ box.style.display='none'; };
+bg.onerror = ()=>{ box.style.display='none'; };
+text.innerText = safeValue(item.title || 'PROMO BESAR BESARAM - PROMO BESAR BESARAM - PROMO BESAR BESARAM');
+box.style.display='none';
+hero.style.backgroundImage = `linear-gradient(180deg,rgba(0,0,0,.45),rgba(0,0,0,.65)), url('${src}')`;
+hero.classList.add('banner-active');
 }
 
 function bootAdmin(){
@@ -5206,10 +5553,12 @@ safeStartup('ensure v2 shell',ensureV2Shell);
 safeStartup('init dashboard',initDashboard);
 safeStartup('init inventory',initInventory);
 safeStartup('init promo banner',initPromoBanner);
+safeStartup('force simple promo panel',forceSimplePromoPanel);
 safeStartup('init analytics',initAnalytics);
 safeStartup('init settings',initSettings);
 safeStartup('init leads',initLeads);
 safeStartup('init media manager',initMediaManager);
+safeStartup('init showroom location',initShowroomLocationPanel);
 safeStartup('render admin table v2',renderAdminTableV2);
 }
 
@@ -5346,32 +5695,7 @@ updatedAt:new Date().toISOString()
 };
 
 window.openPromoModal = function(){
-openV2EditorModal({
-title:'Promo Banner',
-description:'Create promo banner landing/viewer.',
-fields:[
-{id:'title',label:'Banner title',required:true},
-{id:'subtitle',label:'Subtitle'},
-{id:'description',label:'Description'},
-{id:'buttonText',label:'Button text'},
-{id:'buttonUrl',label:'Button URL'},
-{id:'imageUrl',label:'Promo image URL'},
-{id:'overlayColor',label:'Overlay color',value:'rgba(0,0,0,.35)'},
-{id:'startDate',label:'Start date',value:new Date().toISOString().slice(0,10)},
-{id:'endDate',label:'End date'},
-{id:'priority',label:'Priority',value:'1'},
-{id:'location',label:'Display location',value:'Landing Page Hero'}
-],
-onSave:async (payload)=>{
-await safeFirestore(()=>addDoc(collection(db,PROMO_COLLECTION),{
-...payload,
-priority:Number(payload.priority || 1),
-enabled:true,
-createdAt:new Date().toISOString(),
-updatedAt:new Date().toISOString()
-}));
-}
-});
+quickUploadPromoBanner();
 };
 
 function safeStartup(label,task){
@@ -5398,6 +5722,27 @@ safeStartup('admin hidden trigger',setupHiddenAdminTrigger);
 function bootSyncMotors(){
 
 bootAdminLoginSystem();
+try{
+const localPromoText = localStorage.getItem(localPromoRunnerKey);
+if(localPromoText){
+setText('promoRunner',`${localPromoText} - ${localPromoText} - ${localPromoText}`);
+const promoInput = document.getElementById('promoLandingText');
+if(promoInput) promoInput.value = localPromoText;
+}
+}catch(error){
+console.error('load local promo runner error',error);
+}
+try{
+const localMapUrl = safeValue(localStorage.getItem(localShowroomMapKey)).trim();
+if(localMapUrl){
+applyShowroomMapUrl(localMapUrl);
+}else{
+applyShowroomMapUrl(DEFAULT_MAP_EMBED_URL);
+}
+}catch(error){
+console.error('load local showroom map error',error);
+applyShowroomMapUrl(DEFAULT_MAP_EMBED_URL);
+}
 safeStartup('render skeleton',renderSkeleton);
 safeStartup('hero video',setupHeroVideo);
 safeStartup('filter drawer',setupFilterDrawer);
