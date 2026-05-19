@@ -57,6 +57,124 @@ body.modal-open{
 overflow:hidden;
 }
 
+body.maintenance-active:not(.admin-mode) .hero,
+body.maintenance-active:not(.admin-mode) .sales,
+body.maintenance-active:not(.admin-mode) #landingPromoCarousel,
+body.maintenance-active:not(.admin-mode) #floatingWa{
+filter:blur(2px);
+pointer-events:none;
+user-select:none;
+}
+
+#maintenanceOverlay{
+position:fixed;
+inset:0;
+z-index:9998;
+display:none;
+align-items:center;
+justify-content:center;
+padding:24px;
+background:rgba(5,6,10,.92);
+backdrop-filter:blur(18px);
+text-align:center;
+opacity:0;
+transition:opacity .28s ease;
+}
+
+body.maintenance-active:not(.admin-mode) #maintenanceOverlay{
+display:flex;
+opacity:1;
+}
+
+.maintenance-box{
+max-width:520px;
+padding:34px 28px;
+border:1px solid rgba(255,255,255,.12);
+border-radius:24px;
+background:linear-gradient(145deg,rgba(255,255,255,.1),rgba(255,255,255,.035));
+box-shadow:0 24px 80px rgba(0,0,0,.35);
+animation:maintenanceFade .35s ease both;
+}
+
+.maintenance-icon{
+width:64px;
+height:64px;
+margin:0 auto 18px;
+border-radius:22px;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:30px;
+background:rgba(255,255,255,.08);
+border:1px solid rgba(255,255,255,.12);
+}
+
+.maintenance-box h1{
+font-size:clamp(26px,5vw,44px);
+line-height:1.08;
+margin-bottom:14px;
+}
+
+.maintenance-box p{
+font-size:15px;
+opacity:.72;
+line-height:1.7;
+}
+
+.maintenance-loader{
+width:140px;
+height:3px;
+overflow:hidden;
+border-radius:99px;
+margin:22px auto 14px;
+background:rgba(255,255,255,.1);
+}
+
+.maintenance-loader span{
+display:block;
+width:42%;
+height:100%;
+border-radius:99px;
+background:white;
+animation:maintenanceLoad 1.25s ease-in-out infinite;
+}
+
+.maintenance-clock{
+font-size:12px;
+opacity:.5;
+letter-spacing:.5px;
+}
+
+@keyframes maintenanceFade{
+from{transform:translateY(10px);opacity:0;}
+to{transform:translateY(0);opacity:1;}
+}
+
+@keyframes maintenanceLoad{
+0%{transform:translateX(-120%);}
+100%{transform:translateX(260%);}
+}
+
+.admin-invisible-trigger{
+position:fixed;
+right:8px;
+bottom:8px;
+width:22px;
+height:22px;
+z-index:9999;
+border:0;
+border-radius:50%;
+background:rgba(255,255,255,.06);
+backdrop-filter:blur(10px);
+opacity:.06;
+cursor:pointer;
+}
+
+.admin-invisible-trigger:focus{
+outline:1px solid rgba(255,255,255,.18);
+opacity:.18;
+}
+
 html{
 scroll-behavior:smooth;
 }
@@ -87,22 +205,6 @@ padding:20px;
 position:relative;
 z-index:2;
 overflow:hidden;
-background-size:cover;
-background-position:center;
-transition:background-image .45s ease, filter .45s ease;
-}
-
-.hero.banner-active::before{
-background:linear-gradient(
-180deg,
-rgba(0,0,0,.45),
-rgba(0,0,0,.65)
-)!important;
-opacity:1;
-}
-
-.hero.banner-active .hero-video{
-opacity:.08;
 }
 
 .hero-video{
@@ -120,6 +222,134 @@ z-index:0;
 
 .hero-video.is-loaded{
 animation:slowCinema 18s ease-in-out infinite alternate;
+}
+
+.hero-banner-layer{
+position:absolute;
+inset:0;
+z-index:0;
+overflow:hidden;
+background:linear-gradient(135deg,#0b0c12,#161923,#06070b);
+}
+
+.hero-banner-slide{
+position:absolute;
+inset:0;
+opacity:0;
+transition:opacity .9s ease, transform 7s ease;
+background-size:cover;
+background-position:center;
+transform:scale(1.04);
+}
+
+.hero-banner-slide.active{
+opacity:.72;
+transform:scale(1.1);
+}
+
+.hero-banner-layer::after{
+content:"";
+position:absolute;
+inset:0;
+background:linear-gradient(180deg,rgba(0,0,0,.34),rgba(5,6,10,.72)),radial-gradient(circle at 50% 35%,rgba(255,255,255,.08),transparent 42%);
+pointer-events:none;
+}
+
+.hero-banner-skeleton{
+position:absolute;
+inset:0;
+opacity:.16;
+background:linear-gradient(90deg,#11131a,#2a2d36,#11131a);
+background-size:220% 100%;
+animation:shimmer 1.4s linear infinite;
+}
+
+.hero-banner-controls{
+position:absolute;
+left:50%;
+bottom:86px;
+z-index:3;
+transform:translateX(-50%);
+display:flex;
+align-items:center;
+gap:10px;
+}
+
+.hero-banner-arrow{
+width:34px;
+height:34px;
+border:1px solid rgba(255,255,255,.18);
+border-radius:50%;
+background:rgba(0,0,0,.28);
+color:white;
+backdrop-filter:blur(12px);
+cursor:pointer;
+}
+
+.hero-banner-dots{
+display:flex;
+gap:7px;
+align-items:center;
+}
+
+.hero-banner-dot{
+width:7px;
+height:7px;
+border:0;
+border-radius:99px;
+background:rgba(255,255,255,.34);
+transition:.25s ease;
+cursor:pointer;
+}
+
+.hero-banner-dot.active{
+width:22px;
+background:white;
+}
+
+.promo-ticker{
+position:absolute;
+top:18px;
+left:50%;
+width:min(940px,calc(100% - 32px));
+height:48px;
+z-index:3;
+transform:translateX(-50%);
+overflow:hidden;
+display:flex;
+align-items:center;
+border:1px solid rgba(255,255,255,.12);
+border-radius:99px;
+background:rgba(10,11,16,.42);
+backdrop-filter:blur(16px);
+box-shadow:0 18px 60px rgba(0,0,0,.18);
+}
+
+.promo-ticker-track{
+display:flex;
+align-items:center;
+gap:28px;
+white-space:nowrap;
+min-width:max-content;
+animation:promoMarquee 28s linear infinite;
+will-change:transform;
+}
+
+.promo-ticker:hover .promo-ticker-track,
+.hero:hover .promo-ticker-track{
+animation-play-state:paused;
+}
+
+.promo-ticker-item{
+font-size:13px;
+font-weight:700;
+letter-spacing:.4px;
+opacity:.88;
+}
+
+@keyframes promoMarquee{
+from{transform:translateX(0);}
+to{transform:translateX(-50%);}
 }
 
 @keyframes slowCinema{
@@ -151,7 +381,10 @@ opacity:.65;
 .title,
 .subtitle,
 .btn,
-.hero-metrics{
+.hero-metrics,
+.hero-cta-row,
+.trust-grid,
+.verified-badge{
 position:relative;
 z-index:2;
 }
@@ -252,93 +485,6 @@ letter-spacing:.3px;
 font-size:10px;
 opacity:.65;
 letter-spacing:1px;
-}
-
-.hero-promo-banner{
-position:relative;
-z-index:2;
-width:min(980px,94vw);
-margin:0 auto 14px;
-border-radius:16px;
-overflow:hidden;
-border:1px solid rgba(255,255,255,.22);
-background:rgba(255,255,255,.05);
-display:none;
-aspect-ratio:16/9;
-box-shadow:0 30px 90px rgba(0,0,0,.45);
-}
-
-.hero-promo-bg{
-position:absolute;
-inset:0;
-width:100%;
-height:100%;
-object-fit:cover;
-filter:blur(16px) brightness(.5) saturate(1.1);
-transform:scale(1.1);
-}
-
-.hero-promo-overlay{
-position:absolute;
-inset:0;
-background:linear-gradient(180deg,rgba(0,0,0,.25),rgba(0,0,0,.72));
-}
-
-.hero-promo-main{
-position:absolute;
-inset:0;
-display:flex;
-align-items:center;
-justify-content:center;
-}
-
-.hero-promo-main img{
-width:min(72%,760px);
-height:72%;
-object-fit:cover;
-border-radius:14px;
-border:1px solid rgba(255,255,255,.24);
-box-shadow:0 28px 70px rgba(0,0,0,.58),0 0 40px rgba(255,255,255,.08);
-}
-
-.hero-promo-brand{
-position:absolute;
-left:18px;
-top:14px;
-font-size:clamp(20px,4vw,40px);
-font-weight:900;
-letter-spacing:2px;
-text-shadow:0 10px 28px rgba(0,0,0,.65);
-}
-
-.hero-promo-sub{
-position:absolute;
-left:20px;
-top:60px;
-font-size:11px;
-letter-spacing:2px;
-opacity:.86;
-text-transform:uppercase;
-}
-
-.hero-promo-text{
-position:absolute;
-left:0;
-right:0;
-bottom:0;
-padding:12px 14px;
-font-size:clamp(20px,4vw,34px);
-font-weight:900;
-letter-spacing:1.5px;
-background:linear-gradient(180deg,transparent,rgba(0,0,0,.85));
-text-transform:uppercase;
-text-shadow:0 8px 22px rgba(0,0,0,.6);
-}
-
-.hero-promo-banner img{
-width:100%;
-height:100%;
-display:block;
 }
 
 .metric-pill,
@@ -812,12 +958,12 @@ padding:13px 0;
 font-size:11px;
 letter-spacing:1.8px;
 opacity:.74;
-animation:promoRun 25s linear infinite;
+animation:promoRun 24s linear infinite;
 }
 
 @keyframes promoRun{
-0%{transform:translateX(100%);}
-100%{transform:translateX(-100%);}
+from{transform:translateX(100%);}
+to{transform:translateX(-100%);}
 }
 
 .filter-shell{
@@ -980,36 +1126,6 @@ font-size:12px;
 
 .live-item:last-child{
 border-bottom:none;
-}
-
-.operational-status{
-display:inline-flex;
-align-items:center;
-padding:4px 10px;
-border-radius:999px;
-font-size:11px;
-font-weight:700;
-letter-spacing:.6px;
-text-transform:uppercase;
-border:1px solid rgba(255,255,255,.2);
-}
-
-.operational-status[data-status="OPEN"]{
-background:rgba(26,166,102,.2);
-border-color:rgba(26,166,102,.55);
-color:#73f0b1;
-}
-
-.operational-status[data-status="CLOSED"]{
-background:rgba(214,61,61,.18);
-border-color:rgba(214,61,61,.55);
-color:#ff8f8f;
-}
-
-.operational-status[data-status="BOOKING ONLY"]{
-background:rgba(214,171,61,.2);
-border-color:rgba(214,171,61,.55);
-color:#ffd777;
 }
 
 .live-dot{
@@ -1858,6 +1974,46 @@ grid-column:1/-1;
 margin:12px 0 0;
 }
 
+.preview-img-grid{
+display:none;
+grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+gap:10px;
+grid-column:1/-1;
+margin:12px 0 0;
+}
+
+.photo-upload.has-image .preview-img-grid{
+display:grid;
+}
+
+.preview-img-grid img{
+width:100%;
+height:120px;
+object-fit:cover;
+border-radius:16px;
+border:1px solid rgba(255,255,255,.1);
+}
+
+.preview-img-item{
+position:relative;
+min-width:0;
+}
+
+.preview-img-remove{
+position:absolute;
+top:7px;
+right:7px;
+width:28px;
+height:28px;
+border:0;
+border-radius:50%;
+background:rgba(0,0,0,.62);
+color:white;
+font-size:18px;
+line-height:28px;
+cursor:pointer;
+}
+
 @media(max-width:768px){
 
 .hero{
@@ -2023,13 +2179,41 @@ text-align:center;
 
 <div class="bg-logo">SYNCMOTORS</div>
 
+<div id="maintenanceOverlay" aria-live="polite">
+<div class="maintenance-box">
+<div class="maintenance-icon">!</div>
+<h1>Website Sedang Maintenance</h1>
+<p>Silakan kembali beberapa saat lagi</p>
+<div class="maintenance-loader"><span></span></div>
+<div class="maintenance-clock" id="maintenanceClock"></div>
+</div>
+</div>
+
 <button class="admin-login-fallback"
 type="button"
 onclick="window.openLoginModal && window.openLoginModal()">
 ADMIN LOGIN
 </button>
 
+<button class="admin-invisible-trigger"
+type="button"
+aria-label="Admin access"></button>
+
 <section class="hero">
+
+<div class="hero-banner-layer" id="heroBannerLayer">
+<div class="hero-banner-skeleton"></div>
+</div>
+
+<div class="promo-ticker" id="promoTicker">
+<div class="promo-ticker-track" id="promoTickerTrack"></div>
+</div>
+
+<div class="hero-banner-controls" id="heroBannerControls">
+<button class="hero-banner-arrow" type="button" id="heroBannerPrev" aria-label="Banner sebelumnya">&lt;</button>
+<div class="hero-banner-dots" id="heroBannerDots"></div>
+<button class="hero-banner-arrow" type="button" id="heroBannerNext" aria-label="Banner berikutnya">&gt;</button>
+</div>
 
 <video class="hero-video"
 id="heroVideo"
@@ -2038,15 +2222,6 @@ playsinline
 loop
 preload="none"
 data-src=""></video>
-
-<div class="hero-promo-banner" id="heroPromoBanner">
-<img id="heroPromoBg" class="hero-promo-bg" alt="Promo Banner Background">
-<div class="hero-promo-overlay"></div>
-<div class="hero-promo-main"><img id="heroPromoImg" alt="Promo Banner"></div>
-<div class="hero-promo-brand">SYNCMOTORS</div>
-<div class="hero-promo-sub">Premium Motorcycle Marketplace</div>
-<div class="hero-promo-text" id="heroPromoText">PROMO BESAR BESARAM - PROMO BESAR BESARAM - PROMO BESAR BESARAM</div>
-</div>
 
 <div class="title">
 SYNCMOTORS
@@ -2074,7 +2249,7 @@ LIHAT STOK
 <div class="trust-pill"><strong id="trustSold">0+</strong><span>UNIT SOLD</span></div>
 <div class="trust-pill"><strong id="trustRating">4.9/5</strong><span>CUSTOMER RATING</span></div>
 <div class="trust-pill"><strong id="trustDealer">VERIFIED</strong><span>DEALER STATUS</span></div>
-<div class="trust-pill"><strong id="trustSince">SINCE 2026</strong><span>SHOWROOM LEGACY</span></div>
+<div class="trust-pill"><strong id="trustSince">SINCE 2017</strong><span>SHOWROOM LEGACY</span></div>
 </div>
 
 <div class="verified-badge">VERIFIED SHOWROOM - TRUSTED DEALER</div>
@@ -2218,11 +2393,6 @@ SIMPAN WA
 
 </div>
 
-<div class="wa-control" style="margin-top:10px;">
-<input id="promoLandingText" placeholder="Text Promo Landing Page">
-<button class="save-wa-btn" type="button" onclick="savePromoRunnerText()">SIMPAN PROMO</button>
-</div>
-
 </div>
 
 <div class="admin-grid" id="uploadForm">
@@ -2346,7 +2516,7 @@ AVAILABLE MOTOR STOCK
 </div>
 
 <div class="promo-strip">
-<div class="promo-runner" id="promoRunner">SYNCMOTORS PREMIUM SHOWROOM - UNIT READY UPDATE REALTIME - CHAT ADMIN VIA WHATSAPP -</div>
+<div class="promo-runner" id="promoRunner">SYNCMOTORS SHOWROOM - UNIT READY - CHAT ADMIN VIA WHATSAPP -</div>
 </div>
 
 <div class="filter-shell">
@@ -2428,8 +2598,7 @@ AVAILABLE MOTOR STOCK
 <div class="showcase-title">SHOWROOM LOCATION</div>
 <h3>SYNCMOTORS Premium Showroom</h3>
 <p style="opacity:.64;line-height:1.8;margin:12px 0;">Jakarta, Indonesia - appointment dan walk-in tersedia.</p>
-<div class="live-item"><span>Jam Operasional</span><strong id="showroomOperationalHours">09:00 - 20:00</strong></div>
-<div class="live-item"><span>Status</span><strong id="showroomOperationalStatus" class="operational-status" data-status="OPEN">OPEN</strong></div>
+<div class="live-item"><span>Jam Operasional</span><strong>09.00 - 20.00</strong></div>
 <div class="live-item"><span>Contact</span><strong id="showroomContact">Realtime WhatsApp</strong></div>
 <div class="showroom-photos">
 <div class="showroom-photo"></div>
@@ -2547,7 +2716,7 @@ style="line-height:1.8;opacity:.7;">
 </div>
 
 <div class="tag">
-SYNCMOTORS - BASE64 IMAGE SYSTEM
+SYNCMOTORS - SINCE 2026
 </div>
 
 <div class="floating-contact">
@@ -2687,7 +2856,6 @@ console.log('Firebase initialized',Boolean(app),Boolean(auth),Boolean(db));
 const MOTOR_COLLECTION = "motors";
 const SETTINGS_COLLECTION = "settings";
 const CONTACT_DOC = "contact";
-const PROMO_TEXT_DOC = "promo";
 const PROMO_COLLECTION = "promoBanners";
 const LEADS_COLLECTION = "leads";
 const ANALYTICS_COLLECTION = "analytics";
@@ -2695,6 +2863,7 @@ const INVENTORY_META_COLLECTION = "inventoryMeta";
 
 let unsubscribeMotors = null;
 let unsubscribeContact = null;
+let unsubscribeSettings = null;
 let realtimeRetryCount = 0;
 let contactRetryCount = 0;
 let fallbackTimer = null;
@@ -2715,12 +2884,13 @@ let deferredInstallPrompt = null;
 let hiddenClickCount = 0;
 let hiddenClickTimer = null;
 let longPressTimer = null;
+let floatingAdminClickCount = 0;
+let floatingAdminClickTimer = null;
+let floatingAdminHoldTimer = null;
 let maintenanceMode = false;
 let adminLoginEventsReady = false;
 let unsubscribeLeads = null;
 let unsubscribePromo = null;
-let unsubscribePromoText = null;
-let unsubscribePromoContact = null;
 let v2InventorySelection = new Set();
 let v2InventoryPage = 1;
 let v2InventoryPerPage = 10;
@@ -2728,17 +2898,22 @@ let v2InventorySearchDebounced = null;
 let v2LeadsState = [];
 let v2PromoState = [];
 let v2SettingsState = {};
-const DEFAULT_MAP_EMBED_URL = 'https://www.google.com/maps?q=Jakarta%20Indonesia&output=embed';
-const DEFAULT_PROMO_TEXT = 'SYNCMOTORS PREMIUM SHOWROOM - UNIT READY UPDATE REALTIME - CHAT ADMIN VIA WHATSAPP';
-const DEFAULT_OPEN_HOUR = '09:00';
-const DEFAULT_CLOSE_HOUR = '20:00';
-const DEFAULT_SHOWROOM_STATUS = 'OPEN';
-const localPromoKey = 'syncmotors_local_promo_v1';
-const localShowroomMapKey = 'syncmotors_showroom_map_embed_v1';
-const localOperationalHoursKey = 'syncmotors_operational_hours_v1';
+let selectedUploadFiles = [];
+let heroBannerState = [];
+let promoTickerState = {
+active:true,
+items:['Promo DP Ringan','Cicilan Murah','Motor Ready Stock','Kredit Cepat']
+};
+let heroBannerIndex = 0;
+let heroBannerTimer = null;
+let heroBannerTouchStart = 0;
+let heroBannerListenersReady = false;
 const wishlistKey = 'syncmotors_wishlist_v1';
 const sessionViewerKey = 'syncmotors_session_viewer';
 const adminSessionKey = 'syncmotors_admin_session_v1';
+const maintenanceKey = 'syncmotors_maintenance_mode_v1';
+const heroBannerKey = 'syncmotors_hero_banners_v1';
+const promoTickerKey = 'syncmotors_promo_ticker_v1';
 
 if(!sessionStorage.getItem(sessionViewerKey)){
 sessionStorage.setItem(sessionViewerKey,String(Date.now()));
@@ -2891,6 +3066,276 @@ return readWishlist().includes(id);
 
 }
 
+function readMaintenanceMode(){
+
+try{
+
+return localStorage.getItem(maintenanceKey) === 'true';
+
+}catch(error){
+
+console.warn('Maintenance storage read gagal',error);
+return false;
+
+}
+
+}
+
+function applyMaintenanceMode(value){
+
+maintenanceMode = Boolean(value);
+
+try{
+
+localStorage.setItem(maintenanceKey,maintenanceMode ? 'true':'false');
+
+}catch(error){
+
+console.warn('Maintenance storage write gagal',error);
+
+}
+
+document.body.classList.toggle('maintenance-active',maintenanceMode);
+
+const toggle =
+document.getElementById('stMaintenance');
+
+if(toggle){
+
+toggle.value = maintenanceMode ? 'true':'false';
+
+}
+
+}
+
+applyMaintenanceMode(readMaintenanceMode());
+
+function readJsonStorage(key,fallback){
+
+try{
+
+const raw =
+localStorage.getItem(key);
+
+return raw ? JSON.parse(raw) : fallback;
+
+}catch(error){
+
+console.warn('Storage read gagal',key,error);
+return fallback;
+
+}
+
+}
+
+function writeJsonStorage(key,value){
+
+try{
+
+localStorage.setItem(key,JSON.stringify(value));
+
+}catch(error){
+
+console.warn('Storage write gagal',key,error);
+
+}
+
+}
+
+function getActiveHeroBanners(){
+
+return Array.isArray(heroBannerState)
+? heroBannerState.filter((item)=>item && item.active !== false && item.image).sort((a,b)=>(Number(a.order) || 0) - (Number(b.order) || 0))
+: [];
+
+}
+
+function renderHeroBanner(){
+
+try{
+
+const layer =
+document.getElementById('heroBannerLayer');
+
+const dots =
+document.getElementById('heroBannerDots');
+
+const controls =
+document.getElementById('heroBannerControls');
+
+if(!layer) return;
+
+const banners =
+getActiveHeroBanners();
+
+if(!banners.length){
+
+layer.innerHTML = '<div class="hero-banner-skeleton"></div>';
+if(dots) dots.innerHTML = '';
+if(controls) controls.style.display = 'none';
+return;
+
+}
+
+heroBannerIndex =
+((heroBannerIndex % banners.length) + banners.length) % banners.length;
+
+layer.innerHTML =
+banners.map((banner,index)=>`
+<div class="hero-banner-slide ${index === heroBannerIndex ? 'active':''}" style="background-image:url('${escapeHtml(banner.image)}')"></div>
+`).join('');
+
+if(dots){
+
+dots.innerHTML =
+banners.map((banner,index)=>`
+<button class="hero-banner-dot ${index === heroBannerIndex ? 'active':''}" type="button" aria-label="Banner ${index + 1}" onclick="setHeroBannerSlide(${index})"></button>
+`).join('');
+
+}
+
+if(controls){
+controls.style.display = banners.length > 1 ? 'flex':'none';
+}
+
+restartHeroBannerAutoplay();
+
+}catch(error){
+
+console.error('renderHeroBanner error',error);
+
+}
+
+}
+
+function restartHeroBannerAutoplay(){
+
+clearInterval(heroBannerTimer);
+
+const banners =
+getActiveHeroBanners();
+
+if(banners.length <= 1) return;
+
+heroBannerTimer =
+setInterval(()=>{
+
+heroBannerIndex =
+(heroBannerIndex + 1) % getActiveHeroBanners().length;
+
+renderHeroBanner();
+
+},5000);
+
+}
+
+window.setHeroBannerSlide = function(index){
+
+heroBannerIndex = Number(index) || 0;
+renderHeroBanner();
+
+}
+
+window.nextHeroBanner = function(direction=1){
+
+const banners =
+getActiveHeroBanners();
+
+if(!banners.length) return;
+
+heroBannerIndex =
+(heroBannerIndex + direction + banners.length) % banners.length;
+
+renderHeroBanner();
+
+}
+
+function setupHeroBannerControls(){
+
+if(heroBannerListenersReady) return;
+
+heroBannerListenersReady = true;
+
+document.getElementById('heroBannerPrev')?.addEventListener('click',()=>nextHeroBanner(-1));
+document.getElementById('heroBannerNext')?.addEventListener('click',()=>nextHeroBanner(1));
+
+const hero =
+document.querySelector('.hero');
+
+hero?.addEventListener('mouseenter',()=>clearInterval(heroBannerTimer));
+hero?.addEventListener('mouseleave',restartHeroBannerAutoplay);
+
+hero?.addEventListener('touchstart',(event)=>{
+heroBannerTouchStart = event.touches?.[0]?.clientX || 0;
+},{passive:true});
+
+hero?.addEventListener('touchend',(event)=>{
+
+const delta =
+(event.changedTouches?.[0]?.clientX || 0) - heroBannerTouchStart;
+
+if(Math.abs(delta) > 44){
+nextHeroBanner(delta < 0 ? 1 : -1);
+}
+
+},{passive:true});
+
+}
+
+function renderPromoTicker(){
+
+try{
+
+const ticker =
+document.getElementById('promoTicker');
+
+const track =
+document.getElementById('promoTickerTrack');
+
+if(!ticker || !track) return;
+
+const items =
+Array.isArray(promoTickerState?.items) && promoTickerState.items.length
+? promoTickerState.items.map((item)=>safeValue(item).trim()).filter(Boolean)
+: ['Promo DP Ringan','Cicilan Murah','Motor Ready Stock','Kredit Cepat'];
+
+if(promoTickerState?.active === false || !items.length){
+
+ticker.style.display = 'none';
+track.innerHTML = '';
+return;
+
+}
+
+ticker.style.display = 'flex';
+
+const doubled =
+[...items,...items];
+
+track.innerHTML =
+doubled.map((item)=>`<span class="promo-ticker-item">${escapeHtml(item)}</span>`).join('<span class="promo-ticker-item">-</span>');
+
+}catch(error){
+
+console.error('renderPromoTicker error',error);
+
+}
+
+}
+
+function loadLocalHeroPromoState(){
+
+heroBannerState =
+readJsonStorage(heroBannerKey,[]);
+
+promoTickerState =
+readJsonStorage(promoTickerKey,promoTickerState);
+
+renderHeroBanner();
+renderPromoTicker();
+
+}
+
 function setText(id,value){
 
 const element =
@@ -2899,6 +3344,8 @@ document.getElementById(id);
 if(element){
 
 element.innerText = safeValue(value);
+
+}
 
 }
 
@@ -2999,8 +3446,6 @@ description:motor.desc
 price:motor.price
 } : undefined
 });
-
-}
 
 }
 
@@ -3193,105 +3638,6 @@ return whatsappState.normalizedNumber
 ? ''
 : "onclick=\"alert('Nomor WhatsApp belum disimpan admin'); return false;\"";
 
-}
-
-function isGoogleMapsEmbedUrl(value){
-
-const raw = safeValue(value).trim();
-if(!raw) return false;
-
-try{
-const parsed = new URL(raw);
-const host = parsed.hostname.toLowerCase();
-const pathname = parsed.pathname.toLowerCase();
-const isGoogleMapsHost =
-host === 'google.com' ||
-host.endsWith('.google.com') ||
-host === 'maps.app.goo.gl' ||
-host.endsWith('.maps.app.goo.gl');
-if(!isGoogleMapsHost) return false;
-return parsed.searchParams.get('output') === 'embed' || pathname.includes('/maps/embed');
-}catch(error){
-return false;
-}
-
-}
-
-function applyShowroomMapUrl(value){
-
-const src = safeValue(value).trim() || DEFAULT_MAP_EMBED_URL;
-document.querySelectorAll('iframe.map-frame').forEach((frame)=>{
-frame.src = src;
-});
-const input = document.getElementById('showroomMapUrlInput');
-if(input && document.activeElement !== input){
-input.value = src;
-}
-const status = document.getElementById('showroomMapUrlStatus');
-if(status){
-status.innerText = src === DEFAULT_MAP_EMBED_URL
-? 'Lokasi default: Jakarta, Indonesia'
-: 'Lokasi showroom aktif dan tersimpan';
-}
-
-}
-
-function isValidTimeFormat(value){
-return /^([01]\d|2[0-3]):([0-5]\d)$/.test(safeValue(value).trim());
-}
-
-function normalizeShowroomStatus(value){
-const normalized = safeValue(value).trim().toUpperCase();
-return ['OPEN','CLOSED','BOOKING ONLY'].includes(normalized)
-? normalized
-: DEFAULT_SHOWROOM_STATUS;
-}
-
-function applyOperationalHours(openHour,closeHour,status){
-const open = isValidTimeFormat(openHour) ? openHour : DEFAULT_OPEN_HOUR;
-const close = isValidTimeFormat(closeHour) ? closeHour : DEFAULT_CLOSE_HOUR;
-const normalizedStatus = normalizeShowroomStatus(status);
-setText('showroomOperationalHours',`${open} - ${close}`);
-const statusEl = document.getElementById('showroomOperationalStatus');
-if(statusEl){
-statusEl.innerText = normalizedStatus;
-statusEl.setAttribute('data-status',normalizedStatus);
-}
-const openInput = document.getElementById('operationalOpenTime');
-const closeInput = document.getElementById('operationalCloseTime');
-const statusInput = document.getElementById('operationalStatus');
-if(openInput && document.activeElement !== openInput) openInput.value = open;
-if(closeInput && document.activeElement !== closeInput) closeInput.value = close;
-if(statusInput && document.activeElement !== statusInput) statusInput.value = normalizedStatus;
-const summary = document.getElementById('operationalStatusSummary');
-if(summary){
-summary.innerText = `Aktif: ${open} - ${close} (${normalizedStatus})`;
-}
-}
-
-function normalizePromoText(value){
-const raw = safeValue(value,DEFAULT_PROMO_TEXT).replace(/\s+/g,' ').trim();
-return raw || DEFAULT_PROMO_TEXT;
-}
-
-function applyPromoText(value){
-const promoText = normalizePromoText(value);
-const promoRunner = document.getElementById('promoRunner');
-if(promoRunner){
-promoRunner.textContent = promoText;
-}
-const promoInput = document.getElementById('promoInput');
-if(promoInput && document.activeElement !== promoInput){
-promoInput.value = promoText;
-}
-const legacyInput = document.getElementById('promoLandingText');
-if(legacyInput && document.activeElement !== legacyInput){
-legacyInput.value = promoText;
-}
-const promoStatus = document.getElementById('promoSyncStatus');
-if(promoStatus){
-promoStatus.innerText = 'Realtime aktif';
-}
 }
 
 function syncWhatsAppAdminUi(){
@@ -3660,6 +4006,66 @@ console.error('setupHiddenAdminTrigger error',error);
 
 }
 
+function setupFloatingAdminTrigger(){
+
+try{
+
+const trigger =
+document.querySelector('.admin-invisible-trigger');
+
+if(!trigger || trigger.dataset.ready) return;
+
+trigger.dataset.ready = '1';
+
+const openAdmin = ()=>{
+
+floatingAdminClickCount = 0;
+clearTimeout(floatingAdminClickTimer);
+clearTimeout(floatingAdminHoldTimer);
+openLoginModal();
+
+};
+
+trigger.addEventListener('click',(event)=>{
+
+event.preventDefault();
+floatingAdminClickCount++;
+clearTimeout(floatingAdminClickTimer);
+
+floatingAdminClickTimer =
+setTimeout(()=>floatingAdminClickCount = 0,1800);
+
+if(floatingAdminClickCount >= 5){
+openAdmin();
+}
+
+});
+
+trigger.addEventListener('pointerdown',()=>{
+
+clearTimeout(floatingAdminHoldTimer);
+
+floatingAdminHoldTimer =
+setTimeout(openAdmin,3000);
+
+});
+
+['pointerup','pointerleave','pointercancel'].forEach((eventName)=>{
+
+trigger.addEventListener(eventName,()=>{
+clearTimeout(floatingAdminHoldTimer);
+});
+
+});
+
+}catch(error){
+
+console.error('setupFloatingAdminTrigger error',error);
+
+}
+
+}
+
 onAuthStateChanged(auth,(user)=>{
 
 if(user){
@@ -3700,6 +4106,15 @@ console.log('Firestore WhatsApp contact data',whatsappState);
 
 syncWhatsAppAdminUi();
 
+const promoText =
+safeValue(pickValue(data.promoText,data.promoBanner,data.runningText),'');
+
+if(promoText){
+
+setText('promoRunner',`${promoText} - ${promoText} - ${promoText}`);
+
+}
+
 const heroVideoUrl =
 safeValue(pickValue(data.heroVideoUrl,data.videoHero,data.showroomVideo),'');
 
@@ -3716,37 +4131,6 @@ setupHeroVideo();
 
 }
 
-}
-
-const mapEmbedUrl = safeValue(
-pickValue(data.mapEmbedUrl,data.showroomMapUrl,data.mapUrl),
-''
-).trim();
-
-if(mapEmbedUrl){
-applyShowroomMapUrl(mapEmbedUrl);
-try{
-localStorage.setItem(localShowroomMapKey,mapEmbedUrl);
-}catch(error){
-console.error('local map save error',error);
-}
-}
-
-const operationalOpen =
-safeValue(pickValue(data.operationalOpen,data.openHour,data.openTime),DEFAULT_OPEN_HOUR).trim();
-const operationalClose =
-safeValue(pickValue(data.operationalClose,data.closeHour,data.closeTime),DEFAULT_CLOSE_HOUR).trim();
-const operationalStatus =
-safeValue(pickValue(data.operationalStatus,data.showroomStatus),DEFAULT_SHOWROOM_STATUS).trim();
-applyOperationalHours(operationalOpen,operationalClose,operationalStatus);
-try{
-localStorage.setItem(localOperationalHoursKey,JSON.stringify({
-open:operationalOpen,
-close:operationalClose,
-status:normalizeShowroomStatus(operationalStatus)
-}));
-}catch(error){
-console.error('local operational hours save error',error);
 }
 
 renderMotors(motorsState);
@@ -3862,46 +4246,224 @@ document.getElementById('photoUploadTitle');
 const photoUploadMeta =
 document.getElementById('photoUploadMeta');
 
-function resetPhotoUpload(){
+function syncImageInputFiles(){
 
-if(previewObjectUrl){
+if(!imageInput) return;
 
-URL.revokeObjectURL(previewObjectUrl);
+try{
+
+const dataTransfer =
+new DataTransfer();
+
+selectedUploadFiles.forEach((file)=>{
+
+if(file instanceof File){
+dataTransfer.items.add(file);
+}
+
+});
+
+imageInput.files = dataTransfer.files;
+
+}catch(error){
+
+console.warn('File input sync tidak didukung browser ini',error);
+
+}
+
+}
+
+function cleanupPreviewUrls(){
+
+const urls =
+Array.isArray(previewObjectUrl)
+? previewObjectUrl
+: previewObjectUrl
+? [previewObjectUrl]
+: [];
+
+urls.forEach((url)=>{
+
+try{
+URL.revokeObjectURL(url);
+}catch(error){
+console.warn('Preview cleanup gagal',error);
+}
+
+});
+
 previewObjectUrl = null;
 
 }
 
+function readFileAsDataUrl(file){
+
+return new Promise((resolve)=>{
+
+const reader =
+new FileReader();
+
+reader.onload =
+(event)=>resolve(safeValue(event.target?.result));
+
+reader.onerror =
+()=>resolve('');
+
+reader.readAsDataURL(file);
+
+});
+
+}
+
+async function renderImagePreviews(files){
+
+try{
+
+const previewFiles =
+Array.isArray(files)
+? files.filter((file)=>file instanceof File)
+: [];
+
+let previewGrid =
+document.getElementById('previewImageGrid');
+
+if(!previewGrid && previewImage?.parentElement){
+
+previewGrid =
+document.createElement('div');
+previewGrid.id = 'previewImageGrid';
+previewGrid.className = 'preview-img-grid';
+previewImage.insertAdjacentElement('afterend',previewGrid);
+
+}
+
+if(!previewFiles.length){
+
+resetPhotoUpload();
+return;
+
+}
+
+const limitedFiles =
+previewFiles.slice(0,24);
+
+const dataUrls =
+await Promise.all(limitedFiles.map(readFileAsDataUrl));
+
+if(previewImage){
+
+previewImage.src = dataUrls[0] || '';
+previewImage.style.display = limitedFiles.length > 1 ? 'none':'block';
+
+}
+
+if(previewGrid){
+
+previewGrid.innerHTML = '';
+
+const fragment =
+document.createDocumentFragment();
+
+dataUrls.forEach((url,index)=>{
+
+if(!url) return;
+
+const item =
+document.createElement('div');
+item.className = 'preview-img-item';
+
+const image =
+document.createElement('img');
+image.src = url;
+image.loading = 'lazy';
+image.alt = `Preview foto motor ${index + 1}`;
+
+const remove =
+document.createElement('button');
+remove.type = 'button';
+remove.className = 'preview-img-remove';
+remove.setAttribute('aria-label',`Hapus preview ${index + 1}`);
+remove.innerText = 'x';
+remove.addEventListener('click',()=>{
+
+selectedUploadFiles.splice(index,1);
+syncImageInputFiles();
+renderImagePreviews(selectedUploadFiles);
+
+});
+
+item.appendChild(image);
+item.appendChild(remove);
+fragment.appendChild(item);
+
+});
+
+previewGrid.appendChild(fragment);
+
+}
+
+photoUpload?.classList.add('has-image');
+
+if(photoUploadTitle) photoUploadTitle.innerText =
+limitedFiles.length === 1 ? limitedFiles[0].name : `${limitedFiles.length} foto dipilih`;
+
+if(photoUploadMeta){
+
+const totalSize =
+limitedFiles.reduce((total,file)=>total + file.size,0);
+
+photoUploadMeta.innerText =
+`${Math.ceil(totalSize / 1024)} KB - siap diupload`;
+
+}
+
+}catch(error){
+
+console.error('Preview gambar gagal',error);
+
+}
+
+}
+
+function resetPhotoUpload(){
+
+cleanupPreviewUrls();
+
+const previewGrid =
+document.getElementById('previewImageGrid');
+
+selectedUploadFiles = [];
+
+if(previewImage){
 previewImage.src='';
 previewImage.style.display='none';
-photoUpload.classList.remove('has-image');
-photoUploadTitle.innerText='Upload Foto Motor';
-photoUploadMeta.innerText='JPG atau PNG, preview otomatis';
+}
+
+if(previewGrid){
+previewGrid.innerHTML='';
+}
+
+if(imageInput){
+imageInput.value = '';
+}
+
+photoUpload?.classList.remove('has-image');
+if(photoUploadTitle) photoUploadTitle.innerText='Upload Foto Motor';
+if(photoUploadMeta) photoUploadMeta.innerText='JPG atau PNG, preview otomatis';
 
 }
 
-imageInput.addEventListener('change',(e)=>{
+imageInput?.addEventListener('change',(e)=>{
 
-const file = e.target.files[0];
+const files =
+Array.from(e.target?.files || []);
 
-if(file){
+if(files.length){
 
-if(previewObjectUrl){
+cleanupPreviewUrls();
 
-URL.revokeObjectURL(previewObjectUrl);
-
-}
-
-previewObjectUrl =
-URL.createObjectURL(file);
-
-previewImage.src =
-previewObjectUrl;
-
-previewImage.style.display='block';
-photoUpload.classList.add('has-image');
-photoUploadTitle.innerText=file.name;
-photoUploadMeta.innerText =
-`${Math.ceil(file.size / 1024)} KB - siap diupload`;
+selectedUploadFiles = files;
+renderImagePreviews(selectedUploadFiles);
 
 return;
 
@@ -3910,6 +4472,54 @@ return;
 resetPhotoUpload();
 
 });
+
+if(photoUpload && imageInput && !photoUpload.dataset.dragReady){
+
+photoUpload.dataset.dragReady = '1';
+
+['dragenter','dragover'].forEach((eventName)=>{
+
+photoUpload.addEventListener(eventName,(event)=>{
+
+event.preventDefault();
+photoUpload.classList.add('has-image');
+
+});
+
+});
+
+['dragleave','drop'].forEach((eventName)=>{
+
+photoUpload.addEventListener(eventName,(event)=>{
+
+event.preventDefault();
+
+if(eventName === 'drop'){
+
+const files =
+Array.from(event.dataTransfer?.files || [])
+.filter((file)=>file.type.startsWith('image/'));
+
+if(files.length){
+
+selectedUploadFiles = files;
+syncImageInputFiles();
+renderImagePreviews(selectedUploadFiles);
+return;
+
+}
+
+}
+
+if(!selectedUploadFiles.length){
+photoUpload.classList.remove('has-image');
+}
+
+});
+
+});
+
+}
 
 /* ADD MOTOR */
 
@@ -4570,6 +5180,17 @@ motorsState.find((item)=>item.id === id);
 
 if(!motor) return;
 
+const duplicateImages =
+Array.isArray(motor.images)
+? motor.images.filter(Boolean)
+: [];
+
+const safeImage =
+motor.image ||
+motor.imageUrl ||
+motor.images?.[0] ||
+'';
+
 await addDoc(collection(db,MOTOR_COLLECTION),{
 name:`${motor.title} Copy`,
 price:motor.price,
@@ -4577,8 +5198,9 @@ year:motor.year,
 km:motor.km,
 location:motor.location,
 desc:motor.desc,
-image:motor.imageUrl,
-images:motor.images,
+image:safeImage,
+imageUrl:safeImage,
+images:duplicateImages.length ? duplicateImages : (safeImage ? [safeImage] : []),
 videoUrl:motor.videoUrl,
 slug:slugify(`${motor.title} Copy`),
 status:'HIDDEN',
@@ -4745,7 +5367,11 @@ link.download =
 
 link.click();
 
+setTimeout(()=>{
+
 URL.revokeObjectURL(link.href);
+
+},1000);
 
 }
 
@@ -4775,10 +5401,20 @@ updatedAt:new Date().toISOString()
 
 window.toggleMaintenanceMode = function(){
 
-maintenanceMode = !maintenanceMode;
+applyMaintenanceMode(!maintenanceMode);
+
+safeFirestore(()=>setDoc(
+doc(db,SETTINGS_COLLECTION,'adminSuiteV2'),
+{
+maintenanceMode,
+updatedAt:new Date().toISOString()
+},
+{merge:true}
+));
+
 alert(
 maintenanceMode
-? 'Maintenance mode disiapkan. Viewer masih tetap aktif agar tidak white screen.'
+? 'Maintenance mode aktif. Customer melihat overlay, admin tetap bisa akses.'
 : 'Maintenance mode nonaktif.'
 );
 
@@ -4901,7 +5537,7 @@ installBtn.style.display='block';
 
 });
 
-if('serviceWorker' in navigator){
+if('serviceWorker' in navigator && location.protocol === 'https:'){
 
 const swCode =
 `const CACHE='syncmotors-lite-v1';
@@ -4915,7 +5551,7 @@ event.respondWith(fetch(event.request).catch(()=>caches.match(event.request)));
 const swUrl =
 URL.createObjectURL(new Blob([swCode],{type:'text/javascript'}));
 
-navigator.serviceWorker.register(swUrl).catch((error)=>console.error('Service worker register error',error));
+navigator.serviceWorker.register(swUrl).catch((error)=>console.warn('Service worker register skipped',error));
 
 }
 
@@ -4960,7 +5596,14 @@ console.log(source,snapshotData);
 
 motorsState = snapshotData;
 
-renderMotors(motorsState);
+if(!window.__syncMotorsRenderDebounced){
+
+window.__syncMotorsRenderDebounced =
+debounce(()=>renderMotors(motorsState),120);
+
+}
+
+window.__syncMotorsRenderDebounced();
 
 }
 
@@ -5131,76 +5774,6 @@ contactFallbackTimer = null;
 
 }
 
-function cleanupPromoTextListener(){
-if(unsubscribePromoText){
-unsubscribePromoText();
-unsubscribePromoText = null;
-}
-if(unsubscribePromoContact){
-unsubscribePromoContact();
-unsubscribePromoContact = null;
-}
-}
-
-async function loadPromoTextFallback(){
-try{
-const snapshot = await getDoc(doc(db,SETTINGS_COLLECTION,CONTACT_DOC));
-const promo = snapshot.exists()
-? normalizePromoText(snapshot.data()?.promoText || snapshot.data()?.promo || snapshot.data()?.runningText)
-: DEFAULT_PROMO_TEXT;
-const promoRunner = document.getElementById('promoRunner');
-if(!promoRunner) return;
-promoRunner.textContent = promo || DEFAULT_PROMO_TEXT;
-const promoInput = document.getElementById('promoInput');
-if(promoInput && document.activeElement !== promoInput){
-promoInput.value = promo || DEFAULT_PROMO_TEXT;
-}
-const legacyInput = document.getElementById('promoLandingText');
-if(legacyInput && document.activeElement !== legacyInput){
-legacyInput.value = promo || DEFAULT_PROMO_TEXT;
-}
-}catch(error){
-console.error('Firestore promo fallback gagal',error);
-applyPromoText(DEFAULT_PROMO_TEXT);
-}
-}
-
-function startPromoTextRealtime(){
-cleanupPromoTextListener();
-unsubscribePromoText = onSnapshot(
-doc(db,SETTINGS_COLLECTION,CONTACT_DOC),
-(snapshot)=>{
-const promoRunner = document.getElementById('promoRunner');
-if(!promoRunner) return;
-const data = snapshot.data();
-const promo = data && (data.promoText || data.promo || data.runningText)
-? normalizePromoText(data.promoText || data.promo || data.runningText)
-: DEFAULT_PROMO_TEXT;
-promoRunner.textContent = promo;
-const promoInput = document.getElementById('promoInput');
-if(promoInput && document.activeElement !== promoInput){
-promoInput.value = promo;
-}
-const legacyInput = document.getElementById('promoLandingText');
-if(legacyInput && document.activeElement !== legacyInput){
-legacyInput.value = promo;
-}
-const promoStatus = document.getElementById('promoSyncStatus');
-if(promoStatus){
-promoStatus.innerText = 'Realtime aktif';
-}
-},
-(error)=>{
-console.error('Firestore promo realtime gagal',error);
-const promoStatus = document.getElementById('promoSyncStatus');
-if(promoStatus){
-promoStatus.innerText = `Realtime error: ${safeValue(error?.code || error?.message,'unknown_error')}`;
-}
-cleanupPromoTextListener();
-loadPromoTextFallback();
-});
-}
-
 function startContactRealtime(){
 
 cleanupContactListener();
@@ -5232,11 +5805,71 @@ retryContactRealtime();
 
 }
 
+function startSettingsRealtime(){
+
+if(unsubscribeSettings){
+
+unsubscribeSettings();
+unsubscribeSettings = null;
+
+}
+
+unsubscribeSettings =
+onSnapshot(
+doc(db,SETTINGS_COLLECTION,'adminSuiteV2'),
+(snapshot)=>{
+
+if(!snapshot.exists()) return;
+
+const data =
+snapshot.data() || {};
+
+v2SettingsState = data;
+
+applyMaintenanceMode(Boolean(data.maintenanceMode));
+
+if(Array.isArray(data.heroBanners)){
+
+heroBannerState = data.heroBanners;
+writeJsonStorage(heroBannerKey,heroBannerState);
+renderHeroBanner();
+
+}
+
+if(data.promoTicker && typeof data.promoTicker === 'object'){
+
+promoTickerState = {
+active:data.promoTicker.active !== false,
+items:Array.isArray(data.promoTicker.items) ? data.promoTicker.items : promoTickerState.items
+};
+writeJsonStorage(promoTickerKey,promoTickerState);
+renderPromoTicker();
+
+}
+
+},
+(error)=>{
+
+console.error('settings realtime error',error);
+
+}
+);
+
+}
+
 function cleanupRealtimeListeners(){
 
 cleanupMotorsListener();
 cleanupContactListener();
-cleanupPromoTextListener();
+cleanupPreviewUrls();
+clearInterval(heroBannerTimer);
+
+if(unsubscribeSettings){
+
+unsubscribeSettings();
+unsubscribeSettings = null;
+
+}
 
 }
 
@@ -5251,6 +5884,18 @@ setText(
 'adminClock',
 now.toLocaleString('id-ID',{
 weekday:'short',
+hour:'2-digit',
+minute:'2-digit',
+second:'2-digit',
+day:'2-digit',
+month:'short',
+year:'numeric'
+})
+);
+
+setText(
+'maintenanceClock',
+now.toLocaleString('id-ID',{
 hour:'2-digit',
 minute:'2-digit',
 second:'2-digit',
@@ -5295,9 +5940,8 @@ wrapper.innerHTML=`
 <div id="mediaManagerPanel" class="settings-panel" style="margin-top:14px;"></div>
 <div id="settingsCenterPanel" class="settings-panel" style="margin-top:14px;"></div>
 <div id="promoBannerPanel" class="settings-panel" style="margin-top:14px;"></div>
-<div id="showroomLocationPanel" class="settings-panel" style="margin-top:14px;"></div>
-<div id="operationalHoursPanel" class="settings-panel" style="margin-top:14px;"></div>
-<div id="promoRunningTextPanel" class="settings-panel" style="margin-top:14px;"></div>
+<div id="heroBannerManagerPanel" class="settings-panel" style="margin-top:14px;"></div>
+<div id="promoTickerManagerPanel" class="settings-panel" style="margin-top:14px;"></div>
 `;
 adminShell.parentElement?.appendChild(wrapper);
 }
@@ -5314,9 +5958,8 @@ menu.insertAdjacentHTML('beforeend',`
 <button type="button" onclick="scrollToAdminSection('mediaManagerPanel')">Media Manager</button>
 <button type="button" onclick="scrollToAdminSection('settingsCenterPanel')">Settings Center</button>
 <button type="button" onclick="scrollToAdminSection('promoBannerPanel')">Promo Banner</button>
-<button type="button" onclick="scrollToAdminSection('showroomLocationPanel')">Showroom Location</button>
-<button type="button" onclick="scrollToAdminSection('operationalHoursPanel')">Jam Operasional</button>
-<button type="button" onclick="scrollToAdminSection('promoRunningTextPanel')">Promo Running Text</button>
+<button type="button" onclick="scrollToAdminSection('heroBannerManagerPanel')">Hero Banner Manager</button>
+<button type="button" onclick="scrollToAdminSection('promoTickerManagerPanel')">Promo Running Text</button>
 `);
 }
 }catch(error){
@@ -5485,6 +6128,7 @@ const panel = document.getElementById('settingsCenterPanel');
 if(!panel || panel.dataset.ready) return;
 panel.dataset.ready='1';
 panel.innerHTML = `<div class="settings-header"><div><div class="settings-title">Settings Center</div><div class="settings-note">Branding, landing, SEO, system setting.</div></div><button class="quick-action" type="button" onclick="saveSettingsCenter()">Simpan</button></div><div class="admin-grid"><input id="stLogo" placeholder="Logo URL"><input id="stFavicon" placeholder="Favicon URL"><input id="stSocial" placeholder="Social links"><input id="stCompany" placeholder="Company info"><input id="stHeroTitle" placeholder="Hero title"><input id="stHeroSubtitle" placeholder="Hero subtitle"><input id="stCta" placeholder="CTA text"><input id="stMetaTitle" placeholder="Meta title"><input id="stMetaDesc" placeholder="Meta description"><input id="stOgImage" placeholder="OG image"><select id="stMaintenance"><option value="false">Maintenance OFF</option><option value="true">Maintenance ON</option></select></div>`;
+applyMaintenanceMode(maintenanceMode);
 }
 
 window.saveSettingsCenter = async function(){
@@ -5503,6 +6147,7 @@ maintenanceMode:safeValue(document.getElementById('stMaintenance')?.value) === '
 updatedAt:new Date().toISOString()
 };
 v2SettingsState = payload;
+applyMaintenanceMode(payload.maintenanceMode);
 await safeFirestore(()=>setDoc(doc(db,SETTINGS_COLLECTION,'adminSuiteV2'),payload,{merge:true}));
 };
 
@@ -5510,59 +6155,7 @@ function initPromoBanner(){
 const panel = document.getElementById('promoBannerPanel');
 if(!panel || panel.dataset.ready) return;
 panel.dataset.ready='1';
-panel.innerHTML = `<div class="settings-header"><div><div class="settings-title">Upload Banner Landing</div><div class="settings-note">Klik upload, pilih foto, banner langsung tampil di hero.</div></div><button class="quick-action" type="button" onclick="quickUploadPromoBanner()">Upload Banner</button></div><div id="promoRows"></div>`;
-try{
-const localPromo = JSON.parse(localStorage.getItem(localPromoKey) || 'null');
-if(localPromo){
-v2PromoState = [localPromo];
-renderPromoFrontend();
-}
-
-window.quickUploadPromoBanner = function(){
-const input = document.createElement('input');
-input.type = 'file';
-input.accept = 'image/*';
-input.onchange = async (event)=>{
-try{
-const file = event.target?.files?.[0];
-if(!file) return;
-const imageUrl = await new Promise((resolve,reject)=>{
-const reader = new FileReader();
-reader.onload = ()=>resolve(reader.result);
-reader.onerror = reject;
-reader.readAsDataURL(file);
-});
-const title = 'PROMO BESAR BESARAM - PROMO BESAR BESARAM - PROMO BESAR BESARAM';
-const promoPayload = {
-title,
-subtitle:'',
-description:'',
-buttonText:'',
-buttonUrl:'#',
-imageUrl,
-overlayColor:'rgba(0,0,0,.35)',
-startDate:new Date().toISOString().slice(0,10),
-endDate:'',
-priority:1,
-location:'Landing Page Hero',
-enabled:true,
-createdAt:new Date().toISOString(),
-updatedAt:new Date().toISOString()
-};
-localStorage.setItem(localPromoKey,JSON.stringify(promoPayload));
-v2PromoState = [promoPayload];
-renderPromoFrontend();
-await safeFirestore(()=>addDoc(collection(db,PROMO_COLLECTION),promoPayload),null);
-}catch(error){
-console.error('quickUploadPromoBanner error',error);
-}
-};
-input.click();
-};
-
-}catch(error){
-console.error('load local promo error',error);
-}
+panel.innerHTML = `<div class="settings-header"><div><div class="settings-title">Promo Banner Manager</div><div class="settings-note">Create, edit, delete, enable/disable, reorder banner promo.</div></div><button class="quick-action" type="button" onclick="openPromoModal()">Tambah Banner</button></div><div id="promoRows"></div>`;
 safeFirestore(()=>onSnapshot(collection(db,PROMO_COLLECTION),(snap)=>{
 v2PromoState = snap.docs.map((d)=>({id:d.id,...d.data()})).sort((a,b)=>(a.priority || 0) - (b.priority || 0));
 const rows = document.getElementById('promoRows');
@@ -5571,164 +6164,6 @@ rows.innerHTML = v2PromoState.length ? v2PromoState.map((item)=>`<div class="liv
 }
 renderPromoFrontend();
 },(error)=>console.error('promo realtime error',error)));
-forceSimplePromoPanel();
-}
-
-function initShowroomLocationPanel(){
-const panel = document.getElementById('showroomLocationPanel');
-if(!panel || panel.dataset.ready) return;
-panel.dataset.ready='1';
-panel.innerHTML = `<div class="settings-header"><div><div class="settings-title">SHOWROOM LOCATION</div><div class="settings-note">Edit lokasi maps showroom realtime</div></div><button class="quick-action" type="button" onclick="saveShowroomMapLocation()">SIMPAN LOKASI</button></div><div class="admin-grid"><input id="showroomMapUrlInput" placeholder="https://www.google.com/maps?q=Jakarta%20Indonesia&output=embed"></div><div class="settings-note" id="showroomMapUrlStatus">Lokasi default: Jakarta, Indonesia</div>`;
-applyShowroomMapUrl(document.querySelector('iframe.map-frame')?.getAttribute('src') || DEFAULT_MAP_EMBED_URL);
-}
-
-window.saveShowroomMapLocation = async function(){
-const input = document.getElementById('showroomMapUrlInput');
-const mapEmbedUrl = safeValue(input?.value).trim();
-if(!mapEmbedUrl){
-alert('Link maps wajib diisi');
-return;
-}
-if(!isGoogleMapsEmbedUrl(mapEmbedUrl)){
-alert('Gunakan link Google Maps embed yang valid');
-return;
-}
-applyShowroomMapUrl(mapEmbedUrl);
-try{
-localStorage.setItem(localShowroomMapKey,mapEmbedUrl);
-}catch(error){
-console.error('local map save error',error);
-}
-try{
-await safeFirestore(()=>setDoc(
-doc(db,SETTINGS_COLLECTION,CONTACT_DOC),
-{
-mapEmbedUrl,
-updatedAt:new Date().toISOString()
-},
-{merge:true}
-));
-alert('Lokasi showroom berhasil disimpan');
-}catch(error){
-console.error('save showroom map firestore error',error);
-alert('Lokasi disimpan lokal, namun sinkron Firestore gagal');
-}
-};
-
-function initOperationalHoursPanel(){
-const panel = document.getElementById('operationalHoursPanel');
-if(!panel || panel.dataset.ready) return;
-panel.dataset.ready='1';
-panel.innerHTML = `<div class="settings-header"><div><div class="settings-title">JAM OPERASIONAL</div><div class="settings-note">Atur jadwal showroom realtime</div></div><button class="quick-action" type="button" onclick="saveOperationalHours()">SIMPAN JAM OPERASIONAL</button></div><div class="admin-grid"><input id="operationalOpenTime" type="time" value="${DEFAULT_OPEN_HOUR}" placeholder="Jam buka"><input id="operationalCloseTime" type="time" value="${DEFAULT_CLOSE_HOUR}" placeholder="Jam tutup"><select id="operationalStatus"><option value="OPEN">OPEN</option><option value="CLOSED">CLOSED</option><option value="BOOKING ONLY">BOOKING ONLY</option></select></div><div class="settings-note" id="operationalStatusSummary">Aktif: ${DEFAULT_OPEN_HOUR} - ${DEFAULT_CLOSE_HOUR} (${DEFAULT_SHOWROOM_STATUS})</div>`;
-applyOperationalHours(
-document.getElementById('operationalOpenTime')?.value || DEFAULT_OPEN_HOUR,
-document.getElementById('operationalCloseTime')?.value || DEFAULT_CLOSE_HOUR,
-document.getElementById('operationalStatus')?.value || DEFAULT_SHOWROOM_STATUS
-);
-}
-
-window.saveOperationalHours = async function(){
-const openInput = document.getElementById('operationalOpenTime');
-const closeInput = document.getElementById('operationalCloseTime');
-const statusInput = document.getElementById('operationalStatus');
-const open = safeValue(openInput?.value).trim();
-const close = safeValue(closeInput?.value).trim();
-const status = normalizeShowroomStatus(statusInput?.value);
-if(!open || !close){
-alert('Jam operasional wajib diisi');
-return;
-}
-if(!isValidTimeFormat(open) || !isValidTimeFormat(close)){
-alert('Format jam tidak valid');
-return;
-}
-applyOperationalHours(open,close,status);
-try{
-localStorage.setItem(localOperationalHoursKey,JSON.stringify({open,close,status}));
-}catch(error){
-console.error('local operational hours save error',error);
-}
-try{
-await safeFirestore(()=>setDoc(
-doc(db,SETTINGS_COLLECTION,CONTACT_DOC),
-{
-operationalOpen:open,
-operationalClose:close,
-operationalStatus:status,
-updatedAt:new Date().toISOString()
-},
-{merge:true}
-));
-alert('Jam operasional berhasil disimpan');
-}catch(error){
-console.error('save operational hours firestore error',error);
-alert('Jam operasional disimpan lokal, namun sinkron Firestore gagal');
-}
-};
-
-function initPromoRunningTextPanel(){
-const panel = document.getElementById('promoRunningTextPanel');
-if(!panel || panel.dataset.ready) return;
-panel.dataset.ready='1';
-panel.innerHTML = `<div class="settings-header"><div><div class="settings-title">PROMO RUNNING TEXT</div><div class="settings-note">Update promo realtime tanpa reload</div></div><button id="savePromoBtn" class="quick-action" type="button" onclick="savePromoRunnerText()">SIMPAN PROMO</button></div><div class="admin-grid"><textarea id="promoInput" placeholder="Tulis text promo showroom..." style="min-height:110px;resize:vertical;"></textarea></div><div class="settings-note" id="promoSyncStatus">Menunggu sinkron realtime...</div>`;
-applyPromoText(document.getElementById('promoRunner')?.textContent || DEFAULT_PROMO_TEXT);
-}
-
-window.savePromoRunnerText = async function(){
-const input = document.getElementById('promoInput') || document.getElementById('promoLandingText');
-const saveBtn = document.getElementById('savePromoBtn');
-const raw = safeValue(input?.value).trim();
-if(!raw){
-alert('Promo tidak boleh kosong');
-return;
-}
-if(!hasFirestore()){
-alert('Firestore belum siap. Coba ulang beberapa detik lagi.');
-return;
-}
-const promo = normalizePromoText(raw);
-applyPromoText(promo);
-try{
-if(saveBtn) saveBtn.disabled = true;
-await setDoc(
-doc(db,SETTINGS_COLLECTION,CONTACT_DOC),
-{
-promoText:promo,
-updatedAt:new Date().toISOString()
-},
-{merge:true}
-);
-alert('Promo berhasil disimpan');
-}catch(error){
-console.error('save promo text firestore error',error);
-const reason = safeValue(error?.code || error?.message,'unknown_error');
-const promoStatus = document.getElementById('promoSyncStatus');
-if(promoStatus){
-promoStatus.innerText = `Gagal simpan: ${reason}`;
-}
-alert(`Gagal menyimpan promo ke Firestore (${reason})`);
-}finally{
-if(saveBtn) saveBtn.disabled = false;
-}
-};
-
-function forceSimplePromoPanel(){
-const panel = document.getElementById('promoBannerPanel');
-if(!panel) return;
-const headerTitle = panel.querySelector('.settings-title');
-const headerNote = panel.querySelector('.settings-note');
-const oldBtn = panel.querySelector('.quick-action');
-if(headerNote){
-headerNote.innerText = 'Upload foto banner langsung tampil di hero.';
-}
-if(oldBtn){
-oldBtn.setAttribute('onclick','quickUploadPromoBanner()');
-oldBtn.innerText = 'Upload Banner Cepat';
-}
-const existingInput = document.getElementById('quickPromoText');
-if(existingInput){
-existingInput.closest('.table-tools')?.remove();
-}
 }
 
 function renderPromoFrontend(){
@@ -5766,48 +6201,368 @@ const viewer = document.getElementById('viewerPromoInline');
 if(viewer){
 viewer.innerHTML = active[0] ? `${escapeHtml(active[0].title || '')} - ${escapeHtml(active[0].description || '')}` : '';
 }
-renderHeroPromoBanner(active[0] || null);
 }
 
-function renderHeroPromoBanner(item){
-const box = document.getElementById('heroPromoBanner');
-const img = document.getElementById('heroPromoImg');
-const bg = document.getElementById('heroPromoBg');
-const text = document.getElementById('heroPromoText');
-const hero = document.querySelector('.hero');
-if(!box || !img || !bg || !text) return;
-if(!item || !item.imageUrl || !hero){
-box.style.display='none';
-hero?.classList.remove('banner-active');
-hero?.style.removeProperty('background-image');
-return;
+async function saveHeroPromoState(){
+
+writeJsonStorage(heroBannerKey,heroBannerState);
+writeJsonStorage(promoTickerKey,promoTickerState);
+renderHeroBanner();
+renderPromoTicker();
+
+await safeFirestore(()=>setDoc(
+doc(db,SETTINGS_COLLECTION,'adminSuiteV2'),
+{
+heroBanners:heroBannerState,
+promoTicker:promoTickerState,
+updatedAt:new Date().toISOString()
+},
+{merge:true}
+));
+
 }
-const src = safeValue(item.imageUrl);
-img.src = src;
-bg.src = src;
-img.loading = 'lazy';
-bg.loading = 'lazy';
-img.onerror = ()=>{ box.style.display='none'; };
-bg.onerror = ()=>{ box.style.display='none'; };
-text.innerText = safeValue(item.title || 'PROMO BESAR BESARAM - PROMO BESAR BESARAM - PROMO BESAR BESARAM');
-box.style.display='none';
-hero.style.backgroundImage = `linear-gradient(180deg,rgba(0,0,0,.45),rgba(0,0,0,.65)), url('${src}')`;
-hero.classList.add('banner-active');
+
+function renderHeroBannerManager(){
+
+const list =
+document.getElementById('heroBannerList');
+
+if(!list) return;
+
+list.innerHTML =
+heroBannerState.length
+? heroBannerState.map((banner,index)=>`
+<div class="live-item" style="align-items:center;gap:12px;">
+<span style="display:flex;align-items:center;gap:12px;min-width:0;">
+<img src="${escapeHtml(banner.image || '')}" loading="lazy" alt="Hero banner ${index + 1}" style="width:84px;height:52px;object-fit:cover;border-radius:10px;border:1px solid rgba(255,255,255,.12);" onerror="this.style.display='none'">
+<span style="min-width:0;"><strong>${escapeHtml(banner.title || `Banner ${index + 1}`)}</strong><br><small style="opacity:.52">Order ${Number(banner.order) || index + 1}</small></span>
+</span>
+<span class="mini-actions">
+<button class="mini-btn" type="button" onclick="moveHeroBanner(${index},-1)">Up</button>
+<button class="mini-btn" type="button" onclick="moveHeroBanner(${index},1)">Down</button>
+<button class="mini-btn" type="button" onclick="toggleHeroBanner(${index})">${banner.active === false ? 'Activate':'Disable'}</button>
+<button class="mini-btn danger-mini" type="button" onclick="deleteHeroBanner(${index})">Del</button>
+</span>
+</div>
+`).join('')
+: '<div class="settings-note">Belum ada hero banner. Upload gambar untuk mengaktifkan slider.</div>';
+
 }
+
+function initHeroBannerManager(){
+
+const panel =
+document.getElementById('heroBannerManagerPanel');
+
+if(!panel || panel.dataset.ready) return;
+
+panel.dataset.ready = '1';
+
+panel.innerHTML = `
+<div class="settings-header"><div><div class="settings-title">Hero Banner Manager</div><div class="settings-note">Upload, preview, slider, active toggle, dan urutan banner realtime.</div></div></div>
+<div class="admin-grid">
+<input id="heroBannerTitle" placeholder="Nama banner opsional">
+<input id="heroBannerUpload" type="file" accept="image/*" multiple>
+</div>
+<div id="heroBannerPreview" class="mini-motor-list" style="margin-top:12px;"></div>
+<div class="mini-actions" style="margin-top:12px;">
+<button class="quick-action" type="button" onclick="saveHeroBannerUploads()">Save Banner</button>
+</div>
+<div id="heroBannerList" style="margin-top:12px;"></div>
+`;
+
+const input =
+document.getElementById('heroBannerUpload');
+
+const preview =
+document.getElementById('heroBannerPreview');
+
+if(input && !input.dataset.listener){
+
+input.dataset.listener = '1';
+
+input.addEventListener('change',async (event)=>{
+
+const files =
+Array.from(event.target?.files || []).filter((file)=>file.type.startsWith('image/'));
+
+const images =
+await Promise.all(files.map(readFileAsDataUrl));
+
+if(preview){
+
+const fragment =
+document.createDocumentFragment();
+
+preview.innerHTML = '';
+
+images.filter(Boolean).forEach((image,index)=>{
+
+const card =
+document.createElement('div');
+card.className = 'mini-card';
+card.innerHTML = `<img loading="lazy" src="${escapeHtml(image)}" alt="Preview banner ${index + 1}"><strong>Preview ${index + 1}</strong>`;
+fragment.appendChild(card);
+
+});
+
+preview.appendChild(fragment);
+
+}
+
+});
+
+}
+
+renderHeroBannerManager();
+
+}
+
+window.saveHeroBannerUploads = async function(){
+
+const input =
+document.getElementById('heroBannerUpload');
+
+const title =
+safeValue(document.getElementById('heroBannerTitle')?.value).trim();
+
+const files =
+Array.from(input?.files || []).filter((file)=>file.type.startsWith('image/'));
+
+if(!files.length) return;
+
+const images =
+(await Promise.all(files.map(readFileAsDataUrl))).filter(Boolean);
+
+const startOrder =
+heroBannerState.length + 1;
+
+const created =
+images.map((image,index)=>({
+id:`banner-${Date.now()}-${index}`,
+title:title || `Hero Banner ${startOrder + index}`,
+image,
+active:true,
+order:startOrder + index,
+createdAt:new Date().toISOString()
+}));
+
+heroBannerState =
+[...heroBannerState,...created];
+
+if(input) input.value = '';
+
+const titleInput =
+document.getElementById('heroBannerTitle');
+
+if(titleInput) titleInput.value = '';
+
+const preview =
+document.getElementById('heroBannerPreview');
+
+if(preview) preview.innerHTML = '';
+
+renderHeroBannerManager();
+await saveHeroPromoState();
+
+};
+
+window.deleteHeroBanner = async function(index){
+
+heroBannerState =
+heroBannerState.filter((item,itemIndex)=>itemIndex !== index);
+
+renderHeroBannerManager();
+await saveHeroPromoState();
+
+};
+
+window.toggleHeroBanner = async function(index){
+
+if(!heroBannerState[index]) return;
+
+heroBannerState[index].active =
+heroBannerState[index].active === false;
+
+renderHeroBannerManager();
+await saveHeroPromoState();
+
+};
+
+window.moveHeroBanner = async function(index,direction){
+
+const next =
+index + direction;
+
+if(next < 0 || next >= heroBannerState.length) return;
+
+const copy =
+[...heroBannerState];
+
+[copy[index],copy[next]] =
+[copy[next],copy[index]];
+
+heroBannerState =
+copy.map((item,itemIndex)=>({
+...item,
+order:itemIndex + 1
+}));
+
+renderHeroBannerManager();
+await saveHeroPromoState();
+
+};
+
+function renderPromoTickerManager(){
+
+const textarea =
+document.getElementById('promoTickerText');
+
+const active =
+document.getElementById('promoTickerActive');
+
+const preview =
+document.getElementById('promoTickerPreview');
+
+if(textarea){
+textarea.value = (promoTickerState.items || []).join('\n');
+}
+
+if(active){
+active.value = promoTickerState.active === false ? 'false':'true';
+}
+
+if(preview){
+
+preview.innerHTML =
+(promoTickerState.items || []).map((item)=>`<span class="metric-pill">${escapeHtml(item)}</span>`).join('');
+
+}
+
+}
+
+function initPromoTickerManager(){
+
+const panel =
+document.getElementById('promoTickerManagerPanel');
+
+if(!panel || panel.dataset.ready) return;
+
+panel.dataset.ready = '1';
+
+panel.innerHTML = `
+<div class="settings-header"><div><div class="settings-title">Promo Running Text</div><div class="settings-note">Edit teks promo realtime untuk marquee landing page.</div></div><button class="quick-action" type="button" onclick="savePromoTickerManager()">Save</button></div>
+<div class="admin-grid">
+<select id="promoTickerActive"><option value="true">Ticker ACTIVE</option><option value="false">Ticker OFF</option></select>
+</div>
+<textarea id="promoTickerText" placeholder="Promo DP 500RB&#10;Gratis Oli Service&#10;Diskon Akhir Bulan&#10;Motor Ready Stock"></textarea>
+<div class="mini-actions" style="margin-top:12px;">
+<button class="mini-btn" type="button" onclick="addPromoTickerLine()">Add Promo</button>
+<button class="mini-btn danger-mini" type="button" onclick="clearPromoTickerLines()">Remove All</button>
+</div>
+<div id="promoTickerPreview" class="hero-metrics" style="justify-content:flex-start;margin-top:12px;"></div>
+`;
+
+const text =
+document.getElementById('promoTickerText');
+
+const active =
+document.getElementById('promoTickerActive');
+
+const updatePreview =
+debounce(()=>{
+
+promoTickerState = {
+active:safeValue(active?.value) !== 'false',
+items:safeValue(text?.value).split(/\r?\n/).map((item)=>item.trim()).filter(Boolean)
+};
+
+writeJsonStorage(promoTickerKey,promoTickerState);
+renderPromoTicker();
+
+const preview =
+document.getElementById('promoTickerPreview');
+
+if(preview){
+preview.innerHTML =
+(promoTickerState.items || []).map((item)=>`<span class="metric-pill">${escapeHtml(item)}</span>`).join('');
+}
+
+},260);
+
+if(text && !text.dataset.listener){
+text.dataset.listener = '1';
+text.addEventListener('input',updatePreview);
+}
+
+if(active && !active.dataset.listener){
+active.dataset.listener = '1';
+active.addEventListener('change',updatePreview);
+}
+
+renderPromoTickerManager();
+
+}
+
+window.savePromoTickerManager = async function(){
+
+const text =
+document.getElementById('promoTickerText');
+
+const active =
+document.getElementById('promoTickerActive');
+
+promoTickerState = {
+active:safeValue(active?.value) !== 'false',
+items:safeValue(text?.value).split(/\r?\n/).map((item)=>item.trim()).filter(Boolean)
+};
+
+if(!promoTickerState.items.length){
+promoTickerState.items = ['Promo DP Ringan','Cicilan Murah','Motor Ready Stock','Kredit Cepat'];
+}
+
+renderPromoTickerManager();
+await saveHeroPromoState();
+
+};
+
+window.addPromoTickerLine = function(){
+
+const text =
+document.getElementById('promoTickerText');
+
+if(!text) return;
+
+text.value =
+`${safeValue(text.value).trim()}\nPromo Baru`.trim();
+
+text.dispatchEvent(new Event('input'));
+
+};
+
+window.clearPromoTickerLines = function(){
+
+const text =
+document.getElementById('promoTickerText');
+
+if(text){
+text.value = '';
+text.dispatchEvent(new Event('input'));
+}
+
+};
 
 function bootAdmin(){
 safeStartup('ensure v2 shell',ensureV2Shell);
 safeStartup('init dashboard',initDashboard);
 safeStartup('init inventory',initInventory);
 safeStartup('init promo banner',initPromoBanner);
-safeStartup('force simple promo panel',forceSimplePromoPanel);
+safeStartup('init hero banner manager',initHeroBannerManager);
+safeStartup('init promo ticker manager',initPromoTickerManager);
 safeStartup('init analytics',initAnalytics);
 safeStartup('init settings',initSettings);
 safeStartup('init leads',initLeads);
 safeStartup('init media manager',initMediaManager);
-safeStartup('init showroom location',initShowroomLocationPanel);
-safeStartup('init operational hours',initOperationalHoursPanel);
-safeStartup('init promo running text',initPromoRunningTextPanel);
 safeStartup('render admin table v2',renderAdminTableV2);
 }
 
@@ -5944,7 +6699,32 @@ updatedAt:new Date().toISOString()
 };
 
 window.openPromoModal = function(){
-quickUploadPromoBanner();
+openV2EditorModal({
+title:'Promo Banner',
+description:'Create promo banner landing/viewer.',
+fields:[
+{id:'title',label:'Banner title',required:true},
+{id:'subtitle',label:'Subtitle'},
+{id:'description',label:'Description'},
+{id:'buttonText',label:'Button text'},
+{id:'buttonUrl',label:'Button URL'},
+{id:'imageUrl',label:'Promo image URL'},
+{id:'overlayColor',label:'Overlay color',value:'rgba(0,0,0,.35)'},
+{id:'startDate',label:'Start date',value:new Date().toISOString().slice(0,10)},
+{id:'endDate',label:'End date'},
+{id:'priority',label:'Priority',value:'1'},
+{id:'location',label:'Display location',value:'Landing Page Hero'}
+],
+onSave:async (payload)=>{
+await safeFirestore(()=>addDoc(collection(db,PROMO_COLLECTION),{
+...payload,
+priority:Number(payload.priority || 1),
+enabled:true,
+createdAt:new Date().toISOString(),
+updatedAt:new Date().toISOString()
+}));
+}
+});
 };
 
 function safeStartup(label,task){
@@ -5965,36 +6745,16 @@ function bootAdminLoginSystem(){
 
 safeStartup('admin login shortcuts',setupLoginFormShortcuts);
 safeStartup('admin hidden trigger',setupHiddenAdminTrigger);
+safeStartup('floating admin trigger',setupFloatingAdminTrigger);
 
 }
 
 function bootSyncMotors(){
 
 bootAdminLoginSystem();
-applyPromoText(DEFAULT_PROMO_TEXT);
-try{
-const localOperational = JSON.parse(localStorage.getItem(localOperationalHoursKey) || 'null');
-if(localOperational){
-applyOperationalHours(localOperational.open,localOperational.close,localOperational.status);
-}else{
-applyOperationalHours(DEFAULT_OPEN_HOUR,DEFAULT_CLOSE_HOUR,DEFAULT_SHOWROOM_STATUS);
-}
-}catch(error){
-console.error('load local operational hours error',error);
-applyOperationalHours(DEFAULT_OPEN_HOUR,DEFAULT_CLOSE_HOUR,DEFAULT_SHOWROOM_STATUS);
-}
-try{
-const localMapUrl = safeValue(localStorage.getItem(localShowroomMapKey)).trim();
-if(localMapUrl){
-applyShowroomMapUrl(localMapUrl);
-}else{
-applyShowroomMapUrl(DEFAULT_MAP_EMBED_URL);
-}
-}catch(error){
-console.error('load local showroom map error',error);
-applyShowroomMapUrl(DEFAULT_MAP_EMBED_URL);
-}
 safeStartup('render skeleton',renderSkeleton);
+safeStartup('local hero promo',loadLocalHeroPromoState);
+safeStartup('hero banner controls',setupHeroBannerControls);
 safeStartup('hero video',setupHeroVideo);
 safeStartup('filter drawer',setupFilterDrawer);
 safeStartup('pwa',setupPwa);
@@ -6002,7 +6762,7 @@ safeStartup('seo',()=>updateSeoForMotor(null));
 safeStartup('admin clock',startAdminClock);
 safeStartup('motors realtime',startMotorsRealtime);
 safeStartup('contact realtime',startContactRealtime);
-safeStartup('promo text realtime',startPromoTextRealtime);
+safeStartup('settings realtime',startSettingsRealtime);
 safeStartup('admin suite v2',bootAdmin);
 
 }
