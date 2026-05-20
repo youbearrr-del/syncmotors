@@ -155,26 +155,6 @@ to{transform:translateY(0);opacity:1;}
 100%{transform:translateX(260%);}
 }
 
-.admin-invisible-trigger{
-position:fixed;
-right:8px;
-bottom:8px;
-width:22px;
-height:22px;
-z-index:9999;
-border:0;
-border-radius:50%;
-background:rgba(255,255,255,.06);
-backdrop-filter:blur(10px);
-opacity:.06;
-cursor:pointer;
-}
-
-.admin-invisible-trigger:focus{
-outline:1px solid rgba(255,255,255,.18);
-opacity:.18;
-}
-
 html{
 scroll-behavior:smooth;
 }
@@ -188,8 +168,8 @@ font-size:clamp(60px,12vw,170px);
 font-weight:900;
 letter-spacing:20px;
 color:rgba(255,255,255,0.03);
-pointer-events:auto;
-cursor:pointer;
+pointer-events:none;
+cursor:default;
 user-select:none;
 z-index:0;
 }
@@ -2279,12 +2259,6 @@ opacity:1;
 transform:translateY(0);
 }
 
-body.sync-security-lock > :not(.sync-security-overlay):not(.sync-security-toast):not(script):not(style){
-filter:blur(8px);
-pointer-events:none;
-user-select:none;
-}
-
 @media (max-width:640px){
 .sync-security-card{
 padding:24px 20px;
@@ -2314,16 +2288,6 @@ bottom:82px;
 <div class="maintenance-clock" id="maintenanceClock"></div>
 </div>
 </div>
-
-<button class="admin-login-fallback"
-type="button"
-onclick="window.openLoginModal && window.openLoginModal()">
-ADMIN LOGIN
-</button>
-
-<button class="admin-invisible-trigger"
-type="button"
-aria-label="Admin access"></button>
 
 <section class="hero">
 
@@ -2865,6 +2829,9 @@ function fallbackOpenLoginModal(){
 try{
 var loginModal = document.getElementById('loginModal');
 if(loginModal){
+
+if(loginModal.style.display === 'flex') return;
+
 loginModal.style.display='flex';
 document.body.classList.add('modal-open');
 console.log('Login modal opened');
@@ -2890,9 +2857,8 @@ window.openLoginModal = window.openLoginModal || fallbackOpenLoginModal;
 window.closeLoginModal = window.closeLoginModal || fallbackCloseLoginModal;
 
 document.addEventListener('DOMContentLoaded',function(){
-var fallbackClickCount = 0;
-var fallbackClickTimer = null;
-var fallbackHoldTimer = null;
+if(window.__syncAdminShortcutReady) return;
+window.__syncAdminShortcutReady = true;
 console.log('Admin shortcut loaded');
 document.addEventListener('keydown',function(event){
 if(event.ctrlKey && event.shiftKey && event.key.toLowerCase()==='l'){
@@ -2900,33 +2866,6 @@ event.preventDefault();
 window.openLoginModal();
 }
 });
-document.addEventListener('click',function(event){
-if(window.__syncAdminNativeTrigger) return;
-var target = event.target;
-var clickedLogo = target && target.closest && target.closest('.title,.bg-logo');
-var clickedHeroLogoArea = !clickedLogo && target && target.closest && target.closest('.hero') && event.clientY < (window.innerHeight * .58);
-if(clickedLogo || clickedHeroLogoArea){
-fallbackClickCount++;
-clearTimeout(fallbackClickTimer);
-fallbackClickTimer = setTimeout(function(){ fallbackClickCount = 0; },1800);
-if(fallbackClickCount >= 5){
-fallbackClickCount = 0;
-window.openLoginModal();
-}
-}
-},true);
-document.querySelectorAll('.title,.bg-logo').forEach(function(logo){
-logo.addEventListener('pointerdown',function(){
-if(window.__syncAdminNativeTrigger) return;
-fallbackHoldTimer = setTimeout(function(){ window.openLoginModal(); },3000);
-});
-['pointerup','pointerleave','pointercancel'].forEach(function(eventName){
-logo.addEventListener(eventName,function(){
-clearTimeout(fallbackHoldTimer);
-});
-});
-});
-console.log('Logo trigger loaded');
 });
 })();
 </script>
@@ -3005,12 +2944,6 @@ let currentModalIndex = 0;
 let touchStartX = 0;
 let view360StartX = 0;
 let deferredInstallPrompt = null;
-let hiddenClickCount = 0;
-let hiddenClickTimer = null;
-let longPressTimer = null;
-let floatingAdminClickCount = 0;
-let floatingAdminClickTimer = null;
-let floatingAdminHoldTimer = null;
 let maintenanceMode = false;
 let adminLoginEventsReady = false;
 let unsubscribeLeads = null;
@@ -3058,6 +2991,10 @@ window.__syncSecurityReady = true;
 let overlayTimer = null;
 let toastTimer = null;
 let devtoolsOpen = false;
+let devtoolsDismissedUntilStable = false;
+let lastSecurityPopupAt = 0;
+let devtoolsIntervalId = null;
+const securityPopupCooldown = 10000;
 
 const editableSelector =
 'input,textarea,select,[contenteditable="true"],[contenteditable=""],.admin-panel,.login-modal';
@@ -3093,7 +3030,7 @@ overlay.querySelector('.sync-security-close');
 
 if(closeButton){
 closeButton.addEventListener('click',()=>{
-if(!devtoolsOpen) hideSecurityOverlay();
+hideSecurityOverlay({dismiss:true});
 });
 }
 
@@ -3128,30 +3065,44 @@ toastTimer = setTimeout(()=>toast.classList.remove('is-visible'),2600);
 
 };
 
-function showSecurityOverlay({sticky=false} = {}){
+function showSecurityOverlay({force=false} = {}){
 
 const {overlay} =
 ensureSecurityElements();
 
-document.body.classList.add('sync-security-lock');
+const now = Date.now();
+
+if(!force && now - lastSecurityPopupAt < securityPopupCooldown) return;
+
+lastSecurityPopupAt = now;
 overlay.classList.add('is-visible');
 clearTimeout(overlayTimer);
 
-if(!sticky){
 overlayTimer = setTimeout(()=>{
-if(!devtoolsOpen) hideSecurityOverlay();
+hideSecurityOverlay();
 },3200);
-}
 
 }
 
-function hideSecurityOverlay(){
+function hideSecurityOverlay({dismiss=false} = {}){
 
 const overlay =
 byId('syncSecurityOverlay');
 
+const toast =
+byId('syncSecurityToast');
+
+clearTimeout(overlayTimer);
+clearTimeout(toastTimer);
 document.body.classList.remove('sync-security-lock');
 if(overlay) overlay.classList.remove('is-visible');
+if(toast) toast.classList.remove('is-visible');
+
+if(dismiss){
+devtoolsOpen = false;
+devtoolsDismissedUntilStable = true;
+lastSecurityPopupAt = Date.now();
+}
 
 }
 
@@ -3209,6 +3160,13 @@ window.matchMedia?.('(pointer: coarse)').matches && window.innerWidth < 900;
 
 if(coarseMobile) return;
 
+const viewportScale =
+window.visualViewport?.scale || 1;
+
+if(viewportScale !== 1) return;
+
+if(window.innerWidth < 768 || window.innerHeight < 420) return;
+
 const widthGap =
 Math.abs(window.outerWidth - window.innerWidth);
 
@@ -3216,19 +3174,23 @@ const heightGap =
 Math.abs(window.outerHeight - window.innerHeight);
 
 const detected =
-widthGap > 220 || heightGap > 260;
+widthGap > 360 || heightGap > 320;
+
+if(!detected){
+devtoolsOpen = false;
+devtoolsDismissedUntilStable = false;
+return;
+}
 
 if(detected === devtoolsOpen) return;
 
 devtoolsOpen = detected;
 
-if(devtoolsOpen){
-showSecurityOverlay({sticky:true});
+if(devtoolsOpen && !devtoolsDismissedUntilStable){
+showSecurityOverlay();
 showSecurityToast('Developer mode sedang dibatasi sementara.');
 return;
 }
-
-hideSecurityOverlay();
 
 }catch(error){
 
@@ -3239,7 +3201,7 @@ console.error('Security protection check error',error);
 };
 
 detectDevTools();
-setInterval(detectDevTools,900);
+devtoolsIntervalId = setInterval(detectDevTools,1200);
 
 }
 
@@ -4206,6 +4168,8 @@ document.getElementById('loginModal');
 
 if(loginModal){
 
+if(loginModal.style.display === 'flex') return;
+
 loginModal.style.display='flex';
 document.body.classList.add('modal-open');
 
@@ -4243,6 +4207,11 @@ if(loginModal){
 
 loginModal.style.display='none';
 document.body.classList.remove('modal-open');
+
+const status =
+document.getElementById('loginStatus');
+
+if(status) status.innerText = '';
 
 }
 
@@ -4342,7 +4311,7 @@ console.error('setupLoginFormShortcuts error',error);
 
 }
 
-function setupHiddenAdminTrigger(){
+function setupAdminKeyboardShortcut(){
 
 try{
 
@@ -4353,27 +4322,9 @@ return;
 }
 
 adminLoginEventsReady = true;
-window.__syncAdminNativeTrigger = true;
 
-const logoTargets =
-document.querySelectorAll('.title,.bg-logo');
-
-const registerHiddenClick = ()=>{
-
-hiddenClickCount++;
-clearTimeout(hiddenClickTimer);
-
-hiddenClickTimer =
-setTimeout(()=>hiddenClickCount = 0,1800);
-
-if(hiddenClickCount >= 5){
-
-hiddenClickCount = 0;
-openLoginModal();
-
-}
-
-};
+if(window.__syncAdminShortcutReady) return;
+window.__syncAdminShortcutReady = true;
 
 window.addEventListener('keydown',(event)=>{
 
@@ -4389,111 +4340,9 @@ openLoginModal();
 
 console.log('Admin shortcut loaded');
 
-document.addEventListener('click',(event)=>{
-
-const target =
-event.target;
-
-const clickedLogo =
-target?.closest?.('.title,.bg-logo');
-
-const clickedHeroLogoArea =
-!clickedLogo &&
-target?.closest?.('.hero') &&
-event.clientY < (window.innerHeight * .58);
-
-if(clickedLogo || clickedHeroLogoArea){
-
-registerHiddenClick();
-
-}
-
-},true);
-
-console.log('Logo trigger loaded');
-
-logoTargets.forEach((logo)=>{
-
-logo.addEventListener('pointerdown',()=>{
-
-longPressTimer =
-setTimeout(openLoginModal,3000);
-
-});
-
-['pointerup','pointerleave','pointercancel'].forEach((eventName)=>{
-
-logo.addEventListener(eventName,()=>{
-clearTimeout(longPressTimer);
-});
-
-});
-
-});
-
 }catch(error){
 
-console.error('setupHiddenAdminTrigger error',error);
-
-}
-
-}
-
-function setupFloatingAdminTrigger(){
-
-try{
-
-const trigger =
-document.querySelector('.admin-invisible-trigger');
-
-if(!trigger || trigger.dataset.ready) return;
-
-trigger.dataset.ready = '1';
-
-const openAdmin = ()=>{
-
-floatingAdminClickCount = 0;
-clearTimeout(floatingAdminClickTimer);
-clearTimeout(floatingAdminHoldTimer);
-openLoginModal();
-
-};
-
-trigger.addEventListener('click',(event)=>{
-
-event.preventDefault();
-floatingAdminClickCount++;
-clearTimeout(floatingAdminClickTimer);
-
-floatingAdminClickTimer =
-setTimeout(()=>floatingAdminClickCount = 0,1800);
-
-if(floatingAdminClickCount >= 5){
-openAdmin();
-}
-
-});
-
-trigger.addEventListener('pointerdown',()=>{
-
-clearTimeout(floatingAdminHoldTimer);
-
-floatingAdminHoldTimer =
-setTimeout(openAdmin,3000);
-
-});
-
-['pointerup','pointerleave','pointercancel'].forEach((eventName)=>{
-
-trigger.addEventListener(eventName,()=>{
-clearTimeout(floatingAdminHoldTimer);
-});
-
-});
-
-}catch(error){
-
-console.error('setupFloatingAdminTrigger error',error);
+console.error('setupAdminKeyboardShortcut error',error);
 
 }
 
@@ -7203,8 +7052,7 @@ console.error(`${label} startup error`,error);
 function bootAdminLoginSystem(){
 
 safeStartup('admin login shortcuts',setupLoginFormShortcuts);
-safeStartup('admin hidden trigger',setupHiddenAdminTrigger);
-safeStartup('floating admin trigger',setupFloatingAdminTrigger);
+safeStartup('admin keyboard shortcut',setupAdminKeyboardShortcut);
 
 }
 
